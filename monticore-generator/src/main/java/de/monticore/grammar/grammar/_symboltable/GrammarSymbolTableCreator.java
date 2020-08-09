@@ -4,7 +4,6 @@ package de.monticore.grammar.grammar._symboltable;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multiset;
 import de.monticore.ast.ASTNode;
 import de.monticore.codegen.mc2cd.MCGrammarSymbolTableHelper;
 import de.monticore.grammar.Multiplicity;
@@ -12,7 +11,7 @@ import de.monticore.grammar.grammar._ast.*;
 import de.monticore.grammar.prettyprint.Grammar_WithConceptsPrettyPrinter;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.monticore.utils.Names;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
@@ -43,6 +42,18 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
 
   public GrammarSymbolTableCreator(Deque<? extends IGrammarScope> scopeStack) {
     super(scopeStack);
+  }
+
+  @Override
+  public void visit(ASTSplitRule ast) {
+    super.visit(ast);
+    grammarSymbol.addAllSplitRules(ast.getStringList());
+  }
+
+  @Override
+  public void visit(ASTKeywordRule ast) {
+    super.visit(ast);
+    grammarSymbol.addAllNoKeywords(ast.getStringList());
   }
 
   @Override
@@ -149,6 +160,7 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
   public void visit(ASTKeyTerminal node) {
     // only create a symbol for ASTKeyTerminals that have a usage name
     // only with usage name is shown in AST
+    grammarSymbol.noKeywords.addAll(node.getKeyConstant().getStringList());
     if(node.isPresentUsageName()){
       super.visit(node);
     } else {
@@ -174,6 +186,46 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
   }
 
   @Override
+  public void visit(ASTTokenTerminal node) {
+    // only create a symbol for ASTKeyTerminals that have a usage name
+    // only with usage name is shown in AST
+    if(node.isPresentUsageName()){
+      super.visit(node);
+    } else {
+      // must still add the scope to the ASTKeyTerminal, even if it defines no symbol
+      if (getCurrentScope().isPresent()) {
+        node.setEnclosingScope(getCurrentScope().get());
+      } else {
+        Log.error(String.format(SET_SCOPE_ERROR, node));
+      }
+    }
+  }
+
+  @Override
+  public void visit(ASTTokenConstant node) {
+    super.visit(node);
+    grammarSymbol.splitRules.add(node.getString());
+  }
+
+  @Override
+  public void visit(ASTKeyConstant node) {
+    super.visit(node);
+    grammarSymbol.noKeywords.addAll(node.getStringList());
+  }
+
+  @Override
+  protected RuleComponentSymbol create_TokenTerminal(ASTTokenTerminal ast) {
+    final String symbolName = ast.isPresentUsageName()?ast.getUsageName():"";
+    return new RuleComponentSymbol(symbolName);
+  }
+
+  @Override
+  public void initialize_TokenTerminal(RuleComponentSymbol prodComponent, ASTTokenTerminal ast) {
+    prodComponent.setIsTerminal(true);
+    setComponentMultiplicity(prodComponent, ast);
+  }
+
+  @Override
   protected RuleComponentSymbol create_NonTerminal(ASTNonTerminal ast) {
     final String symbolName = ast.isPresentUsageName() ? ast.getUsageName() : StringTransformations.uncapitalize(ast.getName());
     return new RuleComponentSymbol(symbolName);
@@ -188,13 +240,28 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
   @Override
   public void visit(ASTASTRule ast) {
     final Optional<ProdSymbol> prodSymbol = grammarSymbol.getProdWithInherited(ast.getType());
-    if (!prodSymbol.isPresent()) {
+    if (prodSymbol.isPresent()) {
+      ast.getAdditionalAttributeList().forEach(a -> addAttributeInAST(prodSymbol.get(), a, true));
+    } else {
       error(
           "0xA4076 There must not exist an AST rule for the nonterminal " + ast.getType()
               + " because there exists no production defining " + ast.getType(),
           ast.get_SourcePositionStart());
     }
-    ast.getAdditionalAttributeList().forEach(a -> addAttributeInAST(prodSymbol.get(), a));
+    ast.setEnclosingScope(getCurrentScope().get());
+  }
+
+  @Override
+  public void visit(ASTSymbolRule ast) {
+    final Optional<ProdSymbol> prodSymbol = grammarSymbol.getProdWithInherited(ast.getType());
+    if (prodSymbol.isPresent()) {
+      ast.getAdditionalAttributeList().forEach(a -> addAttributeInAST(prodSymbol.get(), a, false));
+    } else {
+      error(
+              "0xA4077 There must not exist an AST rule for the nonterminal " + ast.getType()
+                      + " because there exists no production defining " + ast.getType(),
+              ast.get_SourcePositionStart());
+    }
     ast.setEnclosingScope(getCurrentScope().get());
   }
 
@@ -250,8 +317,13 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
   protected void initialize_ConstantGroup(RuleComponentSymbol symbol, ASTConstantGroup ast) {
     symbol.setIsConstantGroup(true);
     for (ASTConstant c : ast.getConstantList()) {
-      String name = c.isPresentHumanName()?c.getHumanName():c.getName();
-      symbol.addSubProd(name);
+      if (c.isPresentUsageName()) {
+        symbol.addSubProd(c.getUsageName());
+      } else if (c.isPresentKeyConstant()) {
+        symbol.addSubProd(c.getKeyConstant().getString(0));
+      } else {
+        symbol.addSubProd(c.getName());
+      }
     }
   }
 
@@ -429,8 +501,9 @@ public class GrammarSymbolTableCreator extends GrammarSymbolTableCreatorTOP {
    * @param mcProdSymbol
    * @param astAttribute
    */
-  private void addAttributeInAST(ProdSymbol mcProdSymbol, ASTAdditionalAttribute astAttribute) {
+  private void addAttributeInAST(ProdSymbol mcProdSymbol, ASTAdditionalAttribute astAttribute, boolean isAstAttr) {
     AdditionalAttributeSymbol symbol = create_AdditionalAttribute(astAttribute);
+    symbol.setIsAstAttr(isAstAttr);
     initialize_AdditionalAttribute(symbol,astAttribute);
     mcProdSymbol.getSpannedScope().add(symbol);
     setLinkBetweenSymbolAndNode(symbol, astAttribute);

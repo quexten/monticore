@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.monticore.codegen.cd2java._symboltable.scope;
 
+import de.monticore.cd.cd4analysis.CD4AnalysisMill;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.cd4analysis._symboltable.CDDefinitionSymbol;
 import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbol;
@@ -83,7 +84,6 @@ public class ArtifactScopeDecorator extends AbstractCreator<ASTCDCompilationUnit
         .addCDMethod(createIsPresentNameMethod())
         .addCDMethod(createGetTopLevelSymbolMethod(symbolProds))
         .addCDMethod(createCheckIfContinueAsSubScopeMethod())
-        .addCDMethod(createGetFilePathMethod())
         .addCDMethod(createGetRemainingNameForResolveDownMethod())
         .addAllCDMethods(createContinueWithEnclosingScopeMethods(symbolProds, symbolTableService.getCDSymbol()))
         .addAllCDMethods(createSuperContinueWithEnclosingScopeMethods())
@@ -111,7 +111,10 @@ public class ArtifactScopeDecorator extends AbstractCreator<ASTCDCompilationUnit
   }
 
   protected ASTCDAttribute createImportsAttribute() {
-    return getCDAttributeFacade().createAttribute(PRIVATE, getMCTypeFacade().createListTypeOf(IMPORT_STATEMENT), "imports");
+    ASTModifier modifier = PRIVATE.build();
+    symbolTableService.addDeprecatedStereotype(modifier, Optional.empty());
+    return getCDAttributeFacade()
+        .createAttribute(modifier, getMCTypeFacade().createListTypeOf(IMPORT_STATEMENT), "imports");
   }
 
   protected ASTCDMethod createGetNameMethod() {
@@ -158,13 +161,6 @@ public class ArtifactScopeDecorator extends AbstractCreator<ASTCDCompilationUnit
     return getRemainingNameForResolveDown;
   }
 
-  protected ASTCDMethod createGetFilePathMethod() {
-    ASTCDParameter parameter = getCDParameterFacade().createParameter(getMCTypeFacade().createQualifiedType(symbolTableService.getLanguageClassFullName()), "lang");
-    ASTCDMethod getFilePath = getCDMethodFacade().createMethod(PUBLIC, getMCTypeFacade().createQualifiedType(PATH), "getFilePath", parameter);
-    this.replaceTemplate(EMPTY_BODY, getFilePath, new TemplateHookPoint(TEMPLATE_PATH + "GetFilePath"));
-    return getFilePath;
-  }
-
   protected List<ASTCDMethod> createContinueWithEnclosingScopeMethods(List<ASTCDType> symbolProds, CDDefinitionSymbol definitionSymbol) {
     List<ASTCDMethod> methodList = new ArrayList<>();
     ASTCDParameter parameterFoundSymbols = getCDParameterFacade().createParameter(getMCTypeFacade().createBooleanType(), FOUND_SYMBOLS_VAR);
@@ -184,7 +180,7 @@ public class ArtifactScopeDecorator extends AbstractCreator<ASTCDCompilationUnit
         ASTCDMethod method = getCDMethodFacade().createMethod(PUBLIC, getMCTypeFacade().createListTypeOf(definingSymbolFullName.get()),
             methodName, parameterFoundSymbols, parameterName, parameterModifier, parameterPredicate);
         this.replaceTemplate(EMPTY_BODY, method, new TemplateHookPoint(
-            TEMPLATE_PATH + "ContinueWithEnclosingScope", definingSymbolFullName.get(), className, globalScope));
+            TEMPLATE_PATH + "ContinueWithEnclosingScope4ArtifactScope", definingSymbolFullName.get(), className, globalScope));
         methodList.add(method);
       }
     }

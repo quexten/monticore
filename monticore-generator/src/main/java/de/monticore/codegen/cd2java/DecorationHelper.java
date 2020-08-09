@@ -18,7 +18,7 @@ import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCTypeArgument;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.monticore.utils.Names;
 import de.se_rwth.commons.JavaNamesHelper;
 import de.se_rwth.commons.StringTransformations;
@@ -241,12 +241,7 @@ public class DecorationHelper extends MCBasicTypesHelper {
     }
     sb.append(StringTransformations.capitalize(getNativeAttributeName(ast.getName())));
     if (isListType(astType)) {
-      if (ast.getName().endsWith(TransformationHelper.LIST_SUFFIX)) {
-        sb.replace(sb.length() - TransformationHelper.LIST_SUFFIX.length(),
-            sb.length(), GET_SUFFIX_LIST);
-      } else {
-        sb.append(GET_SUFFIX_LIST);
-      }
+      sb.append(GET_SUFFIX_LIST);
     }
     return sb.toString();
   }
@@ -256,12 +251,7 @@ public class DecorationHelper extends MCBasicTypesHelper {
         StringTransformations.capitalize(getNativeAttributeName(ast.getName())));
     String astType = ast.getMCType().printType(MCFullGenericTypesMill.mcFullGenericTypesPrettyPrinter());
     if (isListType(astType)) {
-      if (ast.getName().endsWith(TransformationHelper.LIST_SUFFIX)) {
-        sb.replace(sb.length() - TransformationHelper.LIST_SUFFIX.length(),
-            sb.length(), GET_SUFFIX_LIST);
-      } else {
-        sb.append(GET_SUFFIX_LIST);
-      }
+      sb.append(GET_SUFFIX_LIST);
     }
     return sb.toString();
   }

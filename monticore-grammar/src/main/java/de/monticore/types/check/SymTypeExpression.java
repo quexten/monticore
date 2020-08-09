@@ -2,9 +2,9 @@
 package de.monticore.types.check;
 
 import com.google.common.collect.Lists;
-import de.monticore.expressions.expressionsbasis.ExpressionsBasisMill;
-import de.monticore.expressions.expressionsbasis._symboltable.ExpressionsBasisScope;
-import de.monticore.types.typesymbols._symboltable.*;
+import de.monticore.symbols.basicsymbols._symboltable.TypeVarSymbol;
+import de.monticore.symbols.oosymbols.OOSymbolsMill;
+import de.monticore.symbols.oosymbols._symboltable.*;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public abstract class SymTypeExpression {
    * Am I primitive? (such as "int")
    * (default: no)
    */
-  public boolean isPrimitive() {
+  public boolean isTypeConstant() {
     return false;
   }
 
@@ -53,7 +53,39 @@ public abstract class SymTypeExpression {
     return false;
   }
 
+  /**
+   * Am I an array?
+   */
+  public boolean isArrayType(){
+    return false;
+  }
+
+  /**
+   * Am I of void type?
+   */
+  public boolean isVoidType(){
+    return false;
+  }
+
+  /**
+   * Am I of null type?
+   */
+  public boolean isNullType(){
+    return false;
+  }
+
+  /**
+   * Am I an object type? (e.g. "String", "Person")
+   */
+  public boolean isObjectType(){
+    return false;
+  }
+
+
+
   public abstract SymTypeExpression deepClone();
+
+  public abstract boolean deepEquals(SymTypeExpression sym);
 
   protected List<MethodSymbol> methodList = new ArrayList<>();
 
@@ -104,7 +136,7 @@ public abstract class SymTypeExpression {
         fieldSymbols.add(parameter.deepClone());
       }
       MethodSymbol copiedMethodSymbol = method.deepClone();
-      ExpressionsBasisScope scope = ExpressionsBasisMill.expressionsBasisScopeBuilder().build();
+      OOSymbolsScope scope = OOSymbolsMill.oOSymbolsScopeBuilder().build();
       for(FieldSymbol parameter: fieldSymbols){
         scope.add(parameter);
       }
@@ -291,17 +323,17 @@ public abstract class SymTypeExpression {
    * Furthermore, each SymTypeExpression knows this TypeSymbol (i.e. the
    * TypeSymbols are loaded (or created) upon creation of the SymType.
    */
-  protected TypeSymbolLoader typeSymbolLoader;
+  protected OOTypeSymbolSurrogate typeSymbolSurrogate;
 
-  public TypeSymbol getTypeInfo() {
-    return typeSymbolLoader.getLoadedSymbol();
+  public OOTypeSymbol getTypeInfo() {
+    return typeSymbolSurrogate.lazyLoadDelegate();
   }
 
-  public List<TypeSymbol> getInnerTypeList(String name) {
-    List<TypeSymbol> types = getTypeInfo().getSpannedScope().resolveTypeMany(name);
-    List<TypeSymbol> typeSymbols = Lists.newArrayList();
+  public List<OOTypeSymbol> getInnerTypeList(String name) {
+    List<OOTypeSymbol> types = getTypeInfo().getSpannedScope().resolveOOTypeMany(name);
+    List<OOTypeSymbol> typeSymbols = Lists.newArrayList();
 
-    for(TypeSymbol type:types){
+    for(OOTypeSymbol type:types){
       if(name!=null && name.equals(type.getName())){
         typeSymbols.add(type);
       }

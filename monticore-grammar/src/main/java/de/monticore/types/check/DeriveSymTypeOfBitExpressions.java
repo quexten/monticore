@@ -4,11 +4,9 @@ package de.monticore.types.check;
 import de.monticore.expressions.bitexpressions._ast.*;
 import de.monticore.expressions.bitexpressions._visitor.BitExpressionsVisitor;
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
-import de.se_rwth.commons.logging.Log;
 
 import java.util.Optional;
 
-import static de.monticore.types.check.SymTypeConstant.unbox;
 import static de.monticore.types.check.TypeCheck.*;
 
 /**
@@ -33,118 +31,83 @@ public class DeriveSymTypeOfBitExpressions extends DeriveSymTypeOfExpression imp
     realThis = this;
   }
 
-  public void setLastResult(LastResult lastResult){
-    this.lastResult = lastResult;
+  @Override
+  public void traverse(ASTLeftShiftExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateLeftShiftExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0200");
+  }
+
+  protected Optional<SymTypeExpression> calculateLeftShiftExpression(ASTLeftShiftExpression expr) {
+    return calculateTypeShift(expr, expr.getRight(), expr.getLeft());
   }
 
   @Override
-  public void traverse(ASTLeftShiftExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeShift(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0200"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  public void traverse(ASTRightShiftExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateRightShiftExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0201");
+  }
+
+  protected Optional<SymTypeExpression> calculateRightShiftExpression(ASTRightShiftExpression expr) {
+    return calculateTypeShift(expr, expr.getRight(), expr.getLeft());
   }
 
   @Override
-  public void traverse(ASTRightShiftExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeShift(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0201"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  public void traverse(ASTLogicalRightShiftExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateLogicalRightShiftExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0202");
+  }
+
+  protected Optional<SymTypeExpression> calculateLogicalRightShiftExpression(ASTLogicalRightShiftExpression expr) {
+    return calculateTypeShift(expr, expr.getRight(), expr.getLeft());
   }
 
   @Override
-  public void traverse(ASTLogicalRightShiftExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeShift(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0202"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  public void traverse(ASTBinaryAndExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateBinaryAndExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0203");
+  }
+
+  protected Optional<SymTypeExpression> calculateBinaryAndExpression(ASTBinaryAndExpression expr) {
+    return calculateTypeBinary(expr.getRight(), expr.getLeft());
   }
 
   @Override
-  public void traverse(ASTBinaryAndExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeBinary(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0203"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  public void traverse(ASTBinaryOrOpExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateBinaryOrOpExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0204");
+  }
+
+  protected Optional<SymTypeExpression> calculateBinaryOrOpExpression(ASTBinaryOrOpExpression expr) {
+    return calculateTypeBinary(expr.getRight(), expr.getLeft());
   }
 
   @Override
-  public void traverse(ASTBinaryOrOpExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeBinary(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0204"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  public void traverse(ASTBinaryXorExpression expr) {
+    Optional<SymTypeExpression> wholeResult = calculateBinaryXorOpExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0205");
   }
 
-  @Override
-  public void traverse(ASTBinaryXorExpression expr){
-    Optional<SymTypeExpression> wholeResult = calculateTypeBinary(expr.getLeft(),expr.getRight());
-    if(wholeResult.isPresent()){
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    }else{
-      lastResult.reset();
-      Log.error("0xA0205"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+  protected Optional<SymTypeExpression> calculateBinaryXorOpExpression(ASTBinaryXorExpression expr) {
+    return calculateTypeBinary(expr.getRight(), expr.getLeft());
   }
 
   /**
    * helper method for the calculation of the type of the ShiftExpressions
    */
-  private Optional<SymTypeExpression> calculateTypeShift(ASTExpression left, ASTExpression right){
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
+  private Optional<SymTypeExpression> calculateTypeShift(ASTShiftExpression expr, ASTExpression right, ASTExpression left) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(left, "0xA0206");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(right, "0xA0207");
+    return calculateTypeShift(expr, leftResult, rightResult);
+  }
 
-    left.accept(getRealThis());
-    if(lastResult.isPresentLast()){
-      //store the type of the left expression in a variable for later use
-      leftResult = lastResult.getLast();
-    }else{
-      Log.error("0xA0206"+String.format(ERROR_MSG,prettyPrinter.prettyprint(left)));
-    }
-
-    right.accept(getRealThis());
-    if(lastResult.isPresentLast()){
-      //store the type of the right expression in a variable for later use
-      rightResult = lastResult.getLast();
-    }else{
-      Log.error("0xA0207"+String.format(ERROR_MSG,prettyPrinter.prettyprint(right)));
-    }
-    
-    if(leftResult.isPrimitive()&&rightResult.isPrimitive()){
+  protected Optional<SymTypeExpression> calculateTypeShift(ASTShiftExpression expr, SymTypeExpression leftResult, SymTypeExpression rightResult) {
+    if (leftResult.isTypeConstant() && rightResult.isTypeConstant()) {
       SymTypeConstant leftEx = (SymTypeConstant) leftResult;
       SymTypeConstant rightEx = (SymTypeConstant) rightResult;
 
       //only defined on integral type - integral type
-      if(leftEx.isIntegralType()&&rightEx.isIntegralType()){
-        return shiftCalculator(leftResult,rightResult);
+      if (isIntegralType(leftEx) && isIntegralType(rightEx)) {
+        return shiftCalculator(expr, leftResult, rightResult);
       }
     }
     //should not happen, will be handled in traverse
@@ -154,35 +117,22 @@ public class DeriveSymTypeOfBitExpressions extends DeriveSymTypeOfExpression imp
   /**
    * helper method for the calculation of the type of the BinaryExpressions
    */
-  private Optional<SymTypeExpression> calculateTypeBinary(ASTExpression left, ASTExpression right){
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
+  private Optional<SymTypeExpression> calculateTypeBinary(ASTExpression left, ASTExpression right) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(left, "0xA0208");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(right, "0xA0209");
+    return calculateTypeBinary(leftResult, rightResult);
+  }
 
-    left.accept(getRealThis());
-    if(lastResult.isPresentLast()){
-      //store the type of the left expression in a variable for later use
-      leftResult = lastResult.getLast();
-    }else{
-      Log.error("0xA0208"+String.format(ERROR_MSG,prettyPrinter.prettyprint(left)));
-    }
-
-    right.accept(getRealThis());
-    if(lastResult.isPresentLast()){
-      //store the type of the right expression in a variable for later use
-      rightResult = lastResult.getLast();
-    }else{
-      Log.error("0xA0209"+String.format(ERROR_MSG,prettyPrinter.prettyprint(right)));
-    }
-    
-    if(leftResult.isPrimitive()&&rightResult.isPrimitive()) {
+  protected Optional<SymTypeExpression> calculateTypeBinary(SymTypeExpression leftResult, SymTypeExpression rightResult) {
+    if (leftResult.isTypeConstant() && rightResult.isTypeConstant()) {
       SymTypeConstant leftEx = (SymTypeConstant) leftResult;
       SymTypeConstant rightEx = (SymTypeConstant) rightResult;
 
       //only defined on boolean - boolean and integral type - integral type
       if (isBoolean(leftResult) && isBoolean(rightResult)) {
         return Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
-      }else if (leftEx.isIntegralType()&&rightEx.isIntegralType()) {
-        return getBinaryNumericPromotion(leftResult,rightResult);
+      } else if (isIntegralType(leftEx) && isIntegralType(rightEx)) {
+        return getBinaryNumericPromotion(leftResult, rightResult);
       }
     }
     //should not happen, no valid result, error will be handled in traverse
@@ -193,16 +143,20 @@ public class DeriveSymTypeOfBitExpressions extends DeriveSymTypeOfExpression imp
    * helper method to calculate the type of the ShiftExpressions
    * cannot be linked with the BinaryExpressions because they are not calculated the same way
    */
-  private Optional<SymTypeExpression> shiftCalculator(SymTypeExpression left, SymTypeExpression right){
-    if(left.isPrimitive() && right.isPrimitive()) {
+  protected Optional<SymTypeExpression> shiftCalculator(ASTShiftExpression expr, SymTypeExpression left, SymTypeExpression right) {
+    if (left.isTypeConstant() && right.isTypeConstant()) {
       SymTypeConstant leftResult = (SymTypeConstant) left;
       SymTypeConstant rightResult = (SymTypeConstant) right;
 
       //only defined on integral type - integral type
-      if(leftResult.isIntegralType()&&rightResult.isIntegralType()){
-        if(isLong(rightResult) && isLong(leftResult)){
-          return Optional.of(SymTypeExpressionFactory.createTypeConstant("long"));
-        }else{
+      if (isIntegralType(leftResult) && isIntegralType(rightResult)) {
+        if (isLong(rightResult)) {
+          if (isLong(leftResult)) {
+            return Optional.of(SymTypeExpressionFactory.createTypeConstant("long"));
+          } else {
+            return Optional.of(SymTypeExpressionFactory.createTypeConstant("int"));
+          }
+        } else {
           return Optional.of(SymTypeExpressionFactory.createTypeConstant("int"));
         }
       }
@@ -216,7 +170,7 @@ public class DeriveSymTypeOfBitExpressions extends DeriveSymTypeOfExpression imp
    */
   private Optional<SymTypeExpression> getBinaryNumericPromotion(SymTypeExpression left, SymTypeExpression right){
     //only integral type - integral type
-    if(left.isPrimitive() && right.isPrimitive()) {
+    if(left.isTypeConstant() && right.isTypeConstant()) {
       SymTypeConstant leftResult = (SymTypeConstant) left;
       SymTypeConstant rightResult = (SymTypeConstant) right;
       if ((isLong(leftResult) && rightResult.isIntegralType()) ||

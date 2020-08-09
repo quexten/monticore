@@ -15,7 +15,7 @@ import de.monticore.codegen.cd2java._visitor.VisitorService;
 import de.monticore.generating.GeneratorEngine;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
-import de.se_rwth.commons.logging.Log;
+import de.se_rwth.commons.logging.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ public class SymbolTableCreatorDelegatorDecoratorTest extends DecoratorTestCase 
 
   private SymbolTableCreatorDelegatorDecorator decorator;
 
-  private static final String AUTOMATON_GLOBAL_SCOPE = "de.monticore.codegen.symboltable.automaton._symboltable.AutomatonGlobalScope";
+  private static final String AUTOMATON_GLOBAL_SCOPE = "de.monticore.codegen.symboltable.automaton._symboltable.IAutomatonGlobalScope";
 
   private static final String AUTOMATON_SYMBOL_TABLE_CREATOR = "AutomatonSymbolTableCreator";
 
@@ -51,7 +51,8 @@ public class SymbolTableCreatorDelegatorDecoratorTest extends DecoratorTestCase 
 
   @Before
   public void setUp() {
-    Log.init();
+    LogStub.init();         // replace log by a sideffect free variant
+    // LogStub.initPlusLog();  // for manual testing purpose only
     this.glex = new GlobalExtensionManagement();
     this.MCTypeFacade = MCTypeFacade.getInstance();
 

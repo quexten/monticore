@@ -2,14 +2,13 @@
 
 package de.monticore.types.check;
 
-import de.monticore.expressions.expressionsbasis._symboltable.IExpressionsBasisScope;
+import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbolSurrogate;
+import de.monticore.types.mcbasictypes.MCBasicTypesMill;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedName;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
-import de.monticore.types.mcbasictypes.MCBasicTypesMill;
 import de.monticore.types.mccollectiontypes._ast.ASTMCTypeArgument;
 import de.monticore.types.mcsimplegenerictypes._ast.ASTMCBasicGenericType;
 import de.monticore.types.mcsimplegenerictypes._visitor.MCSimpleGenericTypesVisitor;
-import de.monticore.types.typesymbols._symboltable.TypeSymbolLoader;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.LinkedList;
@@ -29,8 +28,8 @@ public class SynthesizeSymTypeFromMCSimpleGenericTypes extends SynthesizeSymType
    * Using the visitor functionality to calculate the SymType Expression
    */
 
-  public SynthesizeSymTypeFromMCSimpleGenericTypes(IExpressionsBasisScope scope){
-    super(scope);
+  public SynthesizeSymTypeFromMCSimpleGenericTypes(){
+    super();
   }
 
   // ----------------------------------------------------------  realThis start
@@ -66,21 +65,22 @@ public class SynthesizeSymTypeFromMCSimpleGenericTypes extends SynthesizeSymType
   public void traverse(ASTMCBasicGenericType genericType) {
 
     List<SymTypeExpression> arguments = new LinkedList<SymTypeExpression>();
-    for (ASTMCTypeArgument arg : genericType.getMCTypeArgumentList()) {
+    for (ASTMCTypeArgument arg : genericType.getMCTypeArgumentsList()) {
       if (null != arg) {
         arg.accept(getRealThis());
       }
 
-      if (!lastResult.isPresentLast()) {
+      if (!typeCheckResult.isPresentCurrentResult()) {
         Log.error("0xE9CDA Internal Error: SymType argument missing for generic type. "
             + " Probably TypeCheck mis-configured.");
       }
-      arguments.add(lastResult.getLast());
+      arguments.add(typeCheckResult.getCurrentResult());
     }
-
+    OOTypeSymbolSurrogate loader = new OOTypeSymbolSurrogate(genericType.printWithoutTypeArguments());
+    loader.setEnclosingScope(getScope(genericType.getEnclosingScope()));
     SymTypeExpression tex = SymTypeExpressionFactory.createGenerics(
-        new TypeSymbolLoader(genericType.printWithoutTypeArguments(), scope), arguments);
-    lastResult.setLast(tex);
+        loader, arguments);
+    typeCheckResult.setCurrentResult(tex);
   }
 
   /**
@@ -102,13 +102,17 @@ public class SynthesizeSymTypeFromMCSimpleGenericTypes extends SynthesizeSymType
     // type could also be a boxed Primitive or an Type Variable!
     // We need the SymbolTable to distinguish this stuff
     // PS: that also applies to other Visitors.
-    lastResult.setLast(SymTypeExpressionFactory.createTypeObject(new TypeSymbolLoader(qType.printType(MCBasicTypesMill.mcBasicTypesPrettyPrinter()), scope)));
+    OOTypeSymbolSurrogate loader = new OOTypeSymbolSurrogate(qType.printType(MCBasicTypesMill.mcBasicTypesPrettyPrinter()));
+    loader.setEnclosingScope(getScope(qType.getEnclosingScope()));
+    typeCheckResult.setCurrentResult(SymTypeExpressionFactory.createTypeObject(loader));
   }
 
   @Override
   public void endVisit(ASTMCQualifiedName qName) {
-    SymTypeOfObject oType = createTypeObject(new TypeSymbolLoader(qName.getQName(), scope));
-    lastResult.setLast(oType);
+    OOTypeSymbolSurrogate loader = new OOTypeSymbolSurrogate(qName.getQName());
+    loader.setEnclosingScope(getScope(qName.getEnclosingScope()));
+    SymTypeOfObject oType = createTypeObject(loader);
+    typeCheckResult.setCurrentResult(oType);
   }
 
 }

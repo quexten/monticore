@@ -4,7 +4,7 @@ package automata;
 import automata._ast.*;
 import automata._symboltable.*;
 import automata._parser.AutomataParser;
-import automata._symboltable.serialization.AutomataScopeDeSer;
+import automata._symboltable.AutomataScopeDeSer;
 import com.google.common.collect.Lists;
 import de.monticore.generating.*;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
@@ -56,7 +56,10 @@ public class AutomataTool {
   
   // The AST of the model to be handled (will result from parsing)
   protected ASTAutomaton ast;
-  
+
+  // The Global Scope of the symbol table
+  protected AutomataGlobalScope globalScope;
+
   // the symbol table of the model (after parsing and SymTab creation)
   AutomataArtifactScope modelTopScope;
 
@@ -136,6 +139,11 @@ public class AutomataTool {
     Log.info(modelfilename + " parsed successfully", this.getClass().getName());
 
     // setup the symbol table
+    globalScope =  AutomataMill
+        .automataGlobalScopeBuilder()
+        .setModelPath(new ModelPath())
+        .setModelFileExtension("aut")
+        .build();
     modelTopScope = createSymbolTable(ast);
   
     // Part 2: CoCos
@@ -165,7 +173,7 @@ public class AutomataTool {
     generateAbstractState();
   
     // generate the class for each state
-    for(ASTState state : ast.getStateList()) {
+    for(ASTState state : ast.getStatesList()) {
       generateState(state);
     }
   
@@ -199,7 +207,7 @@ public class AutomataTool {
 
     // we assume there is at least one state (--> CoCo)
     // if there are more: one will arbitrarily be choosen (may be the last one)  (---> CoCo?)
-    ASTState initialState = ast.getStateList().stream().filter(ASTState::isInitial).findAny().get();
+    ASTState initialState = ast.getStatesList().stream().filter(ASTState::isInitial).findAny().get();
     
     // handle TOP extension
     boolean isHW = existsHandwrittenClass(handcodedPath,className);
@@ -286,13 +294,13 @@ public class AutomataTool {
     // For demonstration we use the direct approach
   
     // initialize delta: transition map of maps, and state name2node
-    for(ASTState s: ast.getStateList()) {
+    for(ASTState s: ast.getStatesList()) {
       stateMap.put(s.getName(),s);
       deltaMap.put(s,new HashMap<>());
     }
     
     // Add the transitions to the table
-    for(ASTTransition t: ast.getTransitionList()) {
+    for(ASTTransition t: ast.getTransitionsList()) {
       String input = t.getInput();
       stimuli.add(input);
       ASTState from = stateMap.get(t.getFrom());
@@ -332,18 +340,11 @@ public class AutomataTool {
    * @return
    */
   public AutomataArtifactScope createSymbolTable(ASTAutomaton ast) {
-
-    // TODO AB: AutomataLanguage (die Klasse!) entfernen
-    final AutomataLanguage lang = AutomataMill.automataLanguageBuilder().build();
-
-    // TODO AB: es ist nicht sinnvoll jedes Mal einen GlobalScope zu instantiieren
-    // --> das ist noch eine zu bereinigende technical debt
-    AutomataGlobalScope globalScope = AutomataMill.automataGlobalScopeBuilder()
-        .setModelPath(new ModelPath()).setAutomataLanguage(lang).build();
-
-    // TODO AB: ersetzen durch einfaches create.
-    AutomataSymbolTableCreatorDelegator stCreator = lang.getSymbolTableCreator(globalScope);
-    return stCreator.createFromAST(ast);
+    return AutomataMill
+        .automataSymbolTableCreatorBuilder()
+        .addToScopeStack(globalScope)
+        .build()
+        .createFromAST(ast);
   }
   
   /**

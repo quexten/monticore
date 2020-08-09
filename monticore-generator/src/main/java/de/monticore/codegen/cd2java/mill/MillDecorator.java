@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.monticore.codegen.cd2java.mill;
 
+import de.monticore.cd.cd4analysis.CD4AnalysisMill;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.cd4analysis._symboltable.CDDefinitionSymbol;
 import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbol;
@@ -11,7 +12,7 @@ import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.generating.templateengine.TemplateHookPoint;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.se_rwth.commons.StringTransformations;
 
 import java.util.ArrayList;
@@ -213,13 +214,13 @@ public class MillDecorator extends AbstractCreator<List<ASTCDCompilationUnit>, A
     this.replaceTemplate(EMPTY_BODY, builderMethod, new StringHookPoint("return " + millFullName + "." + symbolBuilderSimpleName + "();"));
     superMethods.add(builderMethod);
 
-    // create corresponding builder for SymbolLoader
-    String symbolLoaderBuilderFullName = service.getSymbolLoaderBuilderFullName(type.getAstNode(), superSymbol);
-    String symbolLoaderBuilderSimpleName = StringTransformations.uncapitalize(service.getSymbolLoaderBuilderSimpleName(type.getAstNode()));
+    // create corresponding builder for symbolSurrogate
+    String symbolSurrogateBuilderFullName = service.getSymbolSurrogateBuilderFullName(type.getAstNode(), superSymbol);
+    String symbolSurrogateBuilderSimpleName = StringTransformations.uncapitalize(service.getSymbolSurrogateBuilderSimpleName(type.getAstNode()));
     ASTCDMethod builderLoaderMethod = getCDMethodFacade().createMethod(PUBLIC_STATIC,
-        getMCTypeFacade().createQualifiedType(symbolLoaderBuilderFullName), symbolLoaderBuilderSimpleName);
+        getMCTypeFacade().createQualifiedType(symbolSurrogateBuilderFullName), symbolSurrogateBuilderSimpleName);
 
-    this.replaceTemplate(EMPTY_BODY, builderLoaderMethod, new StringHookPoint("return " + millFullName + "." + symbolLoaderBuilderSimpleName + "();"));
+    this.replaceTemplate(EMPTY_BODY, builderLoaderMethod, new StringHookPoint("return " + millFullName + "." + symbolSurrogateBuilderSimpleName + "();"));
     superMethods.add(builderLoaderMethod);
     return superMethods;
   }

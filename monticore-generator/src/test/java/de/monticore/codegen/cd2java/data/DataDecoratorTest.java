@@ -4,6 +4,7 @@ package de.monticore.codegen.cd2java.data;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import de.monticore.cd.cd4analysis.CD4AnalysisMill;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.prettyprint.CD4CodePrinter;
 import de.monticore.codegen.cd2java.AbstractService;
@@ -84,7 +85,7 @@ public class DataDecoratorTest extends DecoratorTestCase {
   @Test
   public void testListAttribute() {
     ASTCDAttribute attribute = getAttributeBy("list", dataClass);
-    assertDeepEquals(PROTECTED, attribute.getModifier());
+    assertTrue(attribute.getModifier().isProtected());
     assertListOf(String.class, attribute.getMCType());
   }
 

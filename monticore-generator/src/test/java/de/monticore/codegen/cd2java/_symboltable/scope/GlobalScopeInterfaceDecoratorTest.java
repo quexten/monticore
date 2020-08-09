@@ -1,14 +1,18 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.monticore.codegen.cd2java._symboltable.scope;
 
+<<<<<<< HEAD
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+=======
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 import de.monticore.cd.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.cd.cd4analysis._ast.ASTCDInterface;
 import de.monticore.cd.cd4analysis._ast.ASTCDMethod;
 import de.monticore.cd.prettyprint.CD4CodePrinter;
 import de.monticore.codegen.cd2java.AbstractService;
+<<<<<<< HEAD
 import de.monticore.codegen.cd2java.CoreTemplates;
 import de.monticore.codegen.cd2java.DecoratorTestCase;
 import de.monticore.codegen.cd2java._symboltable.SymbolTableConstants;
@@ -19,12 +23,24 @@ import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.types.MCTypeFacade;
 import de.se_rwth.commons.logging.Log;
+=======
+import de.monticore.codegen.cd2java.DecorationHelper;
+import de.monticore.codegen.cd2java.DecoratorTestCase;
+import de.monticore.codegen.cd2java._symboltable.SymbolTableService;
+import de.monticore.codegen.cd2java.methods.MethodDecorator;
+import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import de.monticore.types.MCTypeFacade;
+import de.se_rwth.commons.logging.*;
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 import org.junit.Before;
 import org.junit.Test;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static de.monticore.cd.facade.CDModifier.PUBLIC_ABSTRACT;
+<<<<<<< HEAD
 import static de.monticore.codegen.cd2java.DecoratorAssert.assertBoolean;
+=======
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 import static de.monticore.codegen.cd2java.DecoratorAssert.assertDeepEquals;
 import static de.monticore.codegen.cd2java.DecoratorTestUtil.getMethodBy;
 import static org.junit.Assert.assertEquals;
@@ -36,12 +52,16 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
   private GlobalExtensionManagement glex;
 
+<<<<<<< HEAD
   private MCTypeFacade mcTypeFacade;
 
+=======
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
   private ASTCDCompilationUnit decoratedCompilationUnit;
 
   private ASTCDCompilationUnit originalCompilationUnit;
 
+<<<<<<< HEAD
   private static final String AUTOMATON_SYMBOL = "de.monticore.codegen.ast.automaton._symboltable.AutomatonSymbol";
 
   private static final String QUALIFIED_NAME_SYMBOL = "de.monticore.codegen.ast.lexicals._symboltable.QualifiedNameSymbol";
@@ -62,11 +82,30 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
     this.glex.setGlobalValue("astHelper", new DecorationHelper());
     this.glex.setGlobalValue("cdPrinter", new CD4CodePrinter());
+=======
+  private MCTypeFacade mcTypeFacade;
+
+  @Before
+  public void setUp() {
+    LogStub.init();         // replace log by a sideffect free variant
+        // LogStub.initPlusLog();  // for manual testing purpose only
+    this.glex = new GlobalExtensionManagement();
+    this.glex.setGlobalValue("astHelper", DecorationHelper.getInstance());
+    this.glex.setGlobalValue("cdPrinter", new CD4CodePrinter());
+
+    this.mcTypeFacade = MCTypeFacade.getInstance();
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
     decoratedCompilationUnit = this.parse("de", "monticore", "codegen", "ast", "Automaton");
     originalCompilationUnit = decoratedCompilationUnit.deepClone();
     this.glex.setGlobalValue("service", new AbstractService(decoratedCompilationUnit));
 
+<<<<<<< HEAD
     GlobalScopeInterfaceDecorator decorator = new GlobalScopeInterfaceDecorator(this.glex, new SymbolTableService(decoratedCompilationUnit));
+=======
+    GlobalScopeInterfaceDecorator decorator = new GlobalScopeInterfaceDecorator(this.glex,
+        new SymbolTableService(decoratedCompilationUnit),
+        new MethodDecorator(glex, new SymbolTableService(decoratedCompilationUnit)));
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 
     this.scopeInterface = decorator.decorate(decoratedCompilationUnit);
   }
@@ -77,7 +116,11 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
   }
 
   @Test
+<<<<<<< HEAD
   public void testClassName() {
+=======
+  public void testInterfaceName() {
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
     assertEquals("IAutomatonGlobalScope", scopeInterface.getName());
   }
 
@@ -88,6 +131,7 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterfaces() {
+<<<<<<< HEAD
     assertDeepEquals(I_AUTOMATON_SCOPE, scopeInterface.getInterface(0));
     assertDeepEquals(SymbolTableConstants.I_GLOBAL_SCOPE_TYPE, scopeInterface.getInterface(1));
   }
@@ -100,10 +144,35 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
   @Test
   public void testMethodCount() {
     assertEquals(14, scopeInterface.getCDMethodList().size());
+=======
+    assertDeepEquals("de.monticore.codegen.ast.lexicals._symboltable.ILexicalsGlobalScope",
+        scopeInterface.getInterface(0));
+    assertDeepEquals("de.monticore.codegen.ast.automaton._symboltable.IAutomatonScope",
+        scopeInterface.getInterface(1));
+  }
+
+  @Test
+  public void testCalculateModelNamesForAutomatonMethod() {
+    ASTCDMethod method = getMethodBy("calculateModelNamesForAutomaton", scopeInterface);
+    assertDeepEquals("Set<String>", method.getMCReturnType().getMCType());
+    assertEquals(1, method.sizeCDParameters());
+    assertDeepEquals(String.class, method.getCDParameter(0).getMCType());
+    assertEquals("name", method.getCDParameter(0).getName());
+  }
+
+  @Test
+  public void testCalculateModelNamesForStateMethod() {
+    ASTCDMethod method = getMethodBy("calculateModelNamesForState", scopeInterface);
+    assertDeepEquals("Set<String>", method.getMCReturnType().getMCType());
+    assertEquals(1, method.sizeCDParameters());
+    assertDeepEquals(String.class, method.getCDParameter(0).getMCType());
+    assertEquals("name", method.getCDParameter(0).getName());
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
   }
 
 
   @Test
+<<<<<<< HEAD
   public void testGetAutomatonLanguageMethod() {
     ASTCDMethod method = getMethodBy("getAutomatonLanguage", scopeInterface);
 
@@ -114,6 +183,8 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
   }
 
   @Test
+=======
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
   public void testCacheMethod() {
     ASTCDMethod method = getMethodBy("cache", scopeInterface);
 
@@ -125,6 +196,7 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
     assertEquals("calculatedModelName", method.getCDParameter(0).getName());
   }
 
+<<<<<<< HEAD
 
   @Test
   public void testContinueWithModelLoaderMethod() {
@@ -243,4 +315,11 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
     ParseResult parseResult = parser.parse(sb.toString());
     assertTrue(parseResult.isSuccessful());
   }
+=======
+  @Test
+  public void testMethodCount() {
+    assertEquals(3, scopeInterface.getCDMethodList().size());
+  }
+
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 }

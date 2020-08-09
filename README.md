@@ -21,10 +21,19 @@ grammar languages are rather comfortable.
 To show a little of MontiCore's capabilities, the following (incomplete) 
 grammar might help:
 
+<<<<<<< HEAD
     grammar MyStatemachine extends Statemachine, Types, SetExpressions             // MontiCore grammar 
     {
       @Override
       Transition = from:State ":" Expression? "->" to:State
+=======
+    grammar MyStatemachine extends Automata,                  // MontiCore grammar 
+                                   MCBasicTypes, SetExpressions, MCCommonLiterals {     
+      start Automaton;
+    
+      // overriding a nonterminal (to add optional conditions):
+      Transition = from:Name@State ":" Expression? "->" to:Name@State;
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 
       // add new variants of expressions
       LogicalNotExpr implements Expression = "!" Expression;
@@ -35,23 +44,33 @@ grammar might help:
       scope LetExpr  implements Expression =
             "let" (VarDeclaration || ",")+ "in" Expression;
 
+<<<<<<< HEAD
       symbol VarDeclaration = Type? Name "=" Expression ;
+=======
+      symbol VarDeclaration = MCType? Name "=" Expression ;
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
     }
 
 The grammar language has a variety of mechanisms to define
 new nonterminals using constants `"!"`, 
 brackets `(..)`, optionals `?`, lists `*`, repetitions `(..||..)+`, etc. 
 The grammar builds an extended version of Statemachines reusing
-existing grammar components, here `Statemachine`, `Types`, and `SetExpressions`.
+existing grammar components, here `Automata`, `MCBasicTypes`, `SetExpressions` and `MCCommonLiterals`.
 The grammar has 5 productions introducing 4 new nonterminals
 and overrides `Transition`,
+<<<<<<< HEAD
 which is inherited from `Statemachine`.
 `Transition` becomes an optional `Expression?` as 
 firing condition.
+=======
+which is inherited from `Automata`.
+`Transition` additionally has an optional `Expression?` as firing condition.
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 `LogicalNotExpr`, `XorExpr`, and `LetExpr` extend the already existing
 `Expression` nonterminal and add new forms of expressions.
 
 `LetExpr` introduces a new local variable, which is
+<<<<<<< HEAD
 visible only in that `scope` (indicated by keyword).
 `VarDeclaration` defines the new place to define `symbol`s (that have a `Name`).
 Heavy infrastructure exists to manage definition of names, visibility, etc.
@@ -59,11 +78,24 @@ Heavy infrastructure exists to manage definition of names, visibility, etc.
 MontiCore compiles the above grammar 
 into `TODO-XXX` classes with in 
 total `TODO-XXX` lines of code that define the complete
+=======
+visible only in that _scope_ (indicated by keyword).
+`VarDeclaration` defines the new place to define _symbols_ (that have a `Name`).
+There is an extensive infrastructure to manage the definition of names, visibility, etc.
+
+MontiCore compiles the above grammar 
+into `78` classes with in 
+total `18629` lines of code that define the complete
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
 frontend and a larger part of the backend of
 a statemachine processor.
 We now can write statemachines like:
 
+<<<<<<< HEAD
     statemachine PingPong {                                                   // MyStatemachine
+=======
+    statemachine PingPong {                                         // MyStatemachine
+>>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
       state Ping, Pong;
       Ping : (speed > 14km/h && !missedBall) -> Pong
     }
@@ -77,7 +109,7 @@ We include these forms of expressions by importing their grammars.
 Please note that in both cases (extension and
 overwriting existing nonterminals), we do not 
 touch nor copy/paste the predefined grammars,
-but achieve a out-of-the-box reuse.
+but achieve an out-of-the-box reuse.
 Out-of-the-box reuse also includes reuse of
 predefined typechecks, code generation, etc. 
 They only need to be extended to the added variants.
@@ -99,8 +131,8 @@ Please also note that `PlusExpr` is mutually left-recursive.
    predefined *language components*, usually identified through an appropriate 
    *component grammar* allowing to define your own language as a
    composition of reusable assets efficiently. reusable assets are among others: 
-   several sets of *literals*, *expressions* and *types*, which are relatively 
-   freely composable.
+   several sets of *literals*, *expressions*, *types*, and *statements*, 
+   which are freely composable.
 
 * [**List of languages**](docs/Languages.md).
    This is a list of languages that can be used out of the box. Some of them

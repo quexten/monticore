@@ -25,13 +25,12 @@ import de.monticore.codegen.cd2java._ast.factory.NodeFactoryService;
 import de.monticore.codegen.cd2java._parser.ParserService;
 import de.monticore.codegen.cd2java._symboltable.SymbolTableCDDecorator;
 import de.monticore.codegen.cd2java._symboltable.SymbolTableService;
-import de.monticore.codegen.cd2java._symboltable.language.LanguageBuilderDecorator;
-import de.monticore.codegen.cd2java._symboltable.language.LanguageDecorator;
 import de.monticore.codegen.cd2java._symboltable.modelloader.ModelLoaderBuilderDecorator;
 import de.monticore.codegen.cd2java._symboltable.modelloader.ModelLoaderDecorator;
 import de.monticore.codegen.cd2java._symboltable.scope.*;
+import de.monticore.codegen.cd2java._symboltable.serialization.*;
 import de.monticore.codegen.cd2java._symboltable.symbol.*;
-import de.monticore.codegen.cd2java._symboltable.symbol.symbolloadermutator.MandatoryMutatorSymbolLoaderDecorator;
+import de.monticore.codegen.cd2java._symboltable.symbol.symbolsurrogatemutator.MandatoryMutatorSymbolSurrogateDecorator;
 import de.monticore.codegen.cd2java._symboltable.symboltablecreator.*;
 import de.monticore.codegen.cd2java._visitor.*;
 import de.monticore.codegen.cd2java._visitor.builder.DelegatorVisitorBuilderDecorator;
@@ -146,19 +145,18 @@ public class MillDecoratorTest extends DecoratorTestCase {
 
     SymbolDecorator symbolDecorator = new SymbolDecorator(glex, symbolTableService, visitorService, methodDecorator);
     BuilderDecorator builderDecorator = new BuilderDecorator(glex, accessorDecorator, symbolTableService);
-    SymbolBuilderDecorator symbolBuilderDecorator = new SymbolBuilderDecorator(glex, builderDecorator);
+    SymbolBuilderDecorator symbolBuilderDecorator = new SymbolBuilderDecorator(glex, symbolTableService, builderDecorator);
+    ScopeInterfaceDecorator scopeInterfaceDecorator = new ScopeInterfaceDecorator(glex, symbolTableService, visitorService, methodDecorator);
     ScopeClassDecorator scopeClassDecorator = new ScopeClassDecorator(glex, symbolTableService, visitorService, methodDecorator);
     ScopeClassBuilderDecorator scopeClassBuilderDecorator = new ScopeClassBuilderDecorator(glex, builderDecorator);
-    ScopeInterfaceDecorator scopeInterfaceDecorator = new ScopeInterfaceDecorator(glex, symbolTableService, visitorService, methodDecorator);
+    GlobalScopeInterfaceDecorator globalScopeInterfaceDecorator = new GlobalScopeInterfaceDecorator(glex, symbolTableService, methodDecorator);
     GlobalScopeClassDecorator globalScopeClassDecorator = new GlobalScopeClassDecorator(glex, symbolTableService, methodDecorator);
     GlobalScopeClassBuilderDecorator globalScopeClassBuilderDecorator = new GlobalScopeClassBuilderDecorator(glex, symbolTableService, builderDecorator);
     ArtifactScopeDecorator artifactScopeDecorator = new ArtifactScopeDecorator(glex, symbolTableService, visitorService, methodDecorator);
     ArtifactScopeBuilderDecorator artifactScopeBuilderDecorator = new ArtifactScopeBuilderDecorator(glex, symbolTableService, builderDecorator, accessorDecorator);
-    SymbolLoaderDecorator symbolReferenceDecorator = new SymbolLoaderDecorator(glex, symbolTableService, methodDecorator, new MandatoryMutatorSymbolLoaderDecorator(glex));
-    SymbolLoaderBuilderDecorator symbolReferenceBuilderDecorator = new SymbolLoaderBuilderDecorator(glex, symbolTableService, accessorDecorator);
+    SymbolSurrogateDecorator symbolReferenceDecorator = new SymbolSurrogateDecorator(glex, symbolTableService, methodDecorator, new MandatoryMutatorSymbolSurrogateDecorator(glex));
+    SymbolSurrogateBuilderDecorator symbolReferenceBuilderDecorator = new SymbolSurrogateBuilderDecorator(glex, symbolTableService, accessorDecorator);
     CommonSymbolInterfaceDecorator commonSymbolInterfaceDecorator = new CommonSymbolInterfaceDecorator(glex, symbolTableService, visitorService, methodDecorator);
-    LanguageDecorator languageDecorator = new LanguageDecorator(glex, symbolTableService, parserService, accessorDecorator);
-    LanguageBuilderDecorator languageBuilderDecorator = new LanguageBuilderDecorator(glex, builderDecorator);
     ModelLoaderDecorator modelLoaderDecorator = new ModelLoaderDecorator(glex, symbolTableService, accessorDecorator);
     ModelLoaderBuilderDecorator modelLoaderBuilderDecorator = new ModelLoaderBuilderDecorator(glex, builderDecorator);
     SymbolResolvingDelegateInterfaceDecorator symbolResolvingDelegateInterfaceDecorator = new SymbolResolvingDelegateInterfaceDecorator(glex, symbolTableService);
@@ -168,17 +166,25 @@ public class MillDecoratorTest extends DecoratorTestCase {
     SymbolTableCreatorForSuperTypes symbolTableCreatorForSuperTypes = new SymbolTableCreatorForSuperTypes(glex, symbolTableService);
     SymbolTableCreatorDelegatorBuilderDecorator symbolTableCreatorDelegatorBuilderDecorator = new SymbolTableCreatorDelegatorBuilderDecorator(glex, builderDecorator);
     SymbolTableCreatorForSuperTypesBuilder symbolTableCreatorForSuperTypesBuilder = new SymbolTableCreatorForSuperTypesBuilder(glex, builderDecorator, symbolTableService);
+    SymbolDeSerDecorator symbolDeSerDecorator = new SymbolDeSerDecorator(glex, symbolTableService);
+    SymbolDeSerBuilderDecorator symbolDeSerBuilderDecorator = new SymbolDeSerBuilderDecorator(glex, builderDecorator);
+    ScopeDeSerDecorator scopeDeSerDecorator = new ScopeDeSerDecorator(glex, symbolTableService, methodDecorator, visitorService);
+    ScopeDeSerBuilderDecorator scopeDeSerBuilderDecorator = new ScopeDeSerBuilderDecorator(glex, builderDecorator);
+    SymbolTablePrinterDecorator symbolTablePrinterDecorator = new SymbolTablePrinterDecorator(glex, symbolTableService, visitorService);
+    SymbolTablePrinterBuilderDecorator symbolTablePrinterBuilderDecorator = new SymbolTablePrinterBuilderDecorator(glex, builderDecorator);
 
     IterablePath targetPath = Mockito.mock(IterablePath.class);
 
     SymbolTableCDDecorator symbolTableCDDecorator = new SymbolTableCDDecorator(glex, targetPath, symbolTableService, symbolDecorator,
         symbolBuilderDecorator, symbolReferenceDecorator, symbolReferenceBuilderDecorator,
-        scopeClassDecorator, scopeClassBuilderDecorator, scopeInterfaceDecorator,
-        globalScopeClassDecorator, globalScopeClassBuilderDecorator, artifactScopeDecorator, artifactScopeBuilderDecorator,
-        commonSymbolInterfaceDecorator, languageDecorator, languageBuilderDecorator, modelLoaderDecorator, modelLoaderBuilderDecorator,
+        scopeInterfaceDecorator, scopeClassDecorator, scopeClassBuilderDecorator,
+        globalScopeInterfaceDecorator, globalScopeClassDecorator, globalScopeClassBuilderDecorator,
+        artifactScopeDecorator, artifactScopeBuilderDecorator,
+        commonSymbolInterfaceDecorator, modelLoaderDecorator, modelLoaderBuilderDecorator,
         symbolResolvingDelegateInterfaceDecorator, symbolTableCreatorDecorator, symbolTableCreatorBuilderDecorator,
         symbolTableCreatorDelegatorDecorator, symbolTableCreatorForSuperTypes, symbolTableCreatorDelegatorBuilderDecorator,
-        symbolTableCreatorForSuperTypesBuilder);
+        symbolTableCreatorForSuperTypesBuilder, symbolDeSerDecorator, scopeDeSerDecorator, symbolTablePrinterDecorator, scopeDeSerBuilderDecorator,
+        symbolDeSerBuilderDecorator, symbolTablePrinterBuilderDecorator);
 
     // cd with no handcoded classes
     return symbolTableCDDecorator.decorate(decoratedCompilationUnit, decoratedSymbolCompilationUnit, decoratedScopeCompilationUnit);
@@ -197,7 +203,7 @@ public class MillDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testAttributeSize(){
-    assertEquals(19, millClass.sizeCDAttributes());
+    assertEquals(24, millClass.sizeCDAttributes());
   }
 
   @Test
@@ -216,9 +222,9 @@ public class MillDecoratorTest extends DecoratorTestCase {
     getAttributeBy("millStateSymbolBuilder", millClass);
     getAttributeBy("millFooSymbolBuilder", millClass);
     getAttributeBy("millAutomatonScopeCDScopeBuilder", millClass);
-    getAttributeBy("millAutomatonSymbolLoaderBuilder", millClass);
-    getAttributeBy("millStateSymbolLoaderBuilder", millClass);
-    getAttributeBy("millFooSymbolLoaderBuilder", millClass);
+    getAttributeBy("millAutomatonSymbolSurrogateBuilder", millClass);
+    getAttributeBy("millStateSymbolSurrogateBuilder", millClass);
+    getAttributeBy("millFooSymbolSurrogateBuilder", millClass);
     getAttributeBy("millAutomatonGlobalScopeBuilder", millClass);
     getAttributeBy("millAutomatonArtifactScopeBuilder", millClass);
     getAttributeBy("millAutomatonModelLoaderBuilder", millClass);
@@ -476,30 +482,30 @@ public class MillDecoratorTest extends DecoratorTestCase {
   }
 
   @Test
-  public void testAutomatonSymbolLoaderMethod() {
-    ASTCDMethod fooBarBuilder = getMethodBy("automatonSymbolLoaderBuilder", millClass);
+  public void testAutomatonSymbolSurrogateMethod() {
+    ASTCDMethod fooBarBuilder = getMethodBy("automatonSymbolSurrogateBuilder", millClass);
     //test Method Name
-    assertEquals("automatonSymbolLoaderBuilder", fooBarBuilder.getName());
+    assertEquals("automatonSymbolSurrogateBuilder", fooBarBuilder.getName());
     //test Parameters
     assertTrue(fooBarBuilder.isEmptyCDParameters());
     //test ReturnType
     assertTrue(fooBarBuilder.getMCReturnType().isPresentMCType());
-    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.AutomatonSymbolLoaderBuilder",
+    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.AutomatonSymbolSurrogateBuilder",
         fooBarBuilder.getMCReturnType().getMCType());
     //test Modifier
     assertTrue(PUBLIC_STATIC.build().deepEquals(fooBarBuilder.getModifier()));
   }
 
   @Test
-  public void testAutomatonSymbolLoaderBuilderMethod() {
-    ASTCDMethod fooBarBuilder = getMethodBy("_automatonSymbolLoaderBuilder", millClass);
+  public void testAutomatonSymbolSurrogateBuilderMethod() {
+    ASTCDMethod fooBarBuilder = getMethodBy("_automatonSymbolSurrogateBuilder", millClass);
     //test Method Name
-    assertEquals("_automatonSymbolLoaderBuilder", fooBarBuilder.getName());
+    assertEquals("_automatonSymbolSurrogateBuilder", fooBarBuilder.getName());
     //test Parameters
     assertTrue(fooBarBuilder.isEmptyCDParameters());
     //test ReturnType
     assertTrue(fooBarBuilder.getMCReturnType().isPresentMCType());
-    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.AutomatonSymbolLoaderBuilder",
+    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.AutomatonSymbolSurrogateBuilder",
         fooBarBuilder.getMCReturnType().getMCType());
     //test Modifier
     assertTrue(PROTECTED.build().deepEquals(fooBarBuilder.getModifier()));
@@ -507,30 +513,30 @@ public class MillDecoratorTest extends DecoratorTestCase {
 
 
   @Test
-  public void testStateSymbolLoaderMethod() {
-    ASTCDMethod fooBarBuilder = getMethodBy("stateSymbolLoaderBuilder", millClass);
+  public void testStateSymbolSurrogateMethod() {
+    ASTCDMethod fooBarBuilder = getMethodBy("stateSymbolSurrogateBuilder", millClass);
     //test Method Name
-    assertEquals("stateSymbolLoaderBuilder", fooBarBuilder.getName());
+    assertEquals("stateSymbolSurrogateBuilder", fooBarBuilder.getName());
     //test Parameters
     assertTrue(fooBarBuilder.isEmptyCDParameters());
     //test ReturnType
     assertTrue(fooBarBuilder.getMCReturnType().isPresentMCType());
-    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.StateSymbolLoaderBuilder",
+    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.StateSymbolSurrogateBuilder",
         fooBarBuilder.getMCReturnType().getMCType());
     //test Modifier
     assertTrue(PUBLIC_STATIC.build().deepEquals(fooBarBuilder.getModifier()));
   }
 
   @Test
-  public void testStateSymbolLoaderBuilderMethod() {
-    ASTCDMethod fooBarBuilder = getMethodBy("_stateSymbolLoaderBuilder", millClass);
+  public void testStateSymbolSurrogateBuilderMethod() {
+    ASTCDMethod fooBarBuilder = getMethodBy("_stateSymbolSurrogateBuilder", millClass);
     //test Method Name
-    assertEquals("_stateSymbolLoaderBuilder", fooBarBuilder.getName());
+    assertEquals("_stateSymbolSurrogateBuilder", fooBarBuilder.getName());
     //test Parameters
     assertTrue(fooBarBuilder.isEmptyCDParameters());
     //test ReturnType
     assertTrue(fooBarBuilder.getMCReturnType().isPresentMCType());
-    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.StateSymbolLoaderBuilder",
+    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.StateSymbolSurrogateBuilder",
         fooBarBuilder.getMCReturnType().getMCType());
     //test Modifier
     assertTrue(PROTECTED.build().deepEquals(fooBarBuilder.getModifier()));
@@ -568,22 +574,22 @@ public class MillDecoratorTest extends DecoratorTestCase {
   }
 
   @Test
-  public void testFooSymbolLoaderMethod() {
-    ASTCDMethod fooBarBuilder = getMethodBy("fooSymbolLoaderBuilder", millClass);
+  public void testFooSymbolSurrogateMethod() {
+    ASTCDMethod fooBarBuilder = getMethodBy("fooSymbolSurrogateBuilder", millClass);
     //test Method Name
-    assertEquals("fooSymbolLoaderBuilder", fooBarBuilder.getName());
+    assertEquals("fooSymbolSurrogateBuilder", fooBarBuilder.getName());
     //test Parameters
     assertTrue(fooBarBuilder.isEmptyCDParameters());
     //test ReturnType
     assertTrue(fooBarBuilder.getMCReturnType().isPresentMCType());
-    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.FooSymbolLoaderBuilder",
+    assertDeepEquals("de.monticore.codegen.symboltable.automaton._symboltable.FooSymbolSurrogateBuilder",
         fooBarBuilder.getMCReturnType().getMCType());
     //test Modifier
     assertTrue(PUBLIC_STATIC.build().deepEquals(fooBarBuilder.getModifier()));
   }
 
   @Test
-  public void testFooSymbolLoaderBuilderMethod() {
+  public void testFooSymbolSurrogateBuilderMethod() {
     ASTCDMethod fooBarBuilder = getMethodBy("_fooSymbolBuilder", millClass);
     //test Method Name
     assertEquals("_fooSymbolBuilder", fooBarBuilder.getName());

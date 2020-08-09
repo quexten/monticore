@@ -74,7 +74,6 @@ while (grammarIterator.hasNext()) {
 for (astGrammar in getParsedGrammars()) {
   // make sure to use the right report manager again
   Reporting.on(Names.getQualifiedName(astGrammar.getPackageList(), astGrammar.getName()))
-  reportGrammarCd(astGrammar, report)
 
   astClassDiagram = getCDOfParsedGrammar(astGrammar)
 
@@ -84,12 +83,14 @@ for (astGrammar in getParsedGrammars()) {
 
   astClassDiagram = addListSuffixToAttributeName(astClassDiagram)
 
+  // report the base diagrams
+  reportCD(astClassDiagram, "", report)
+  reportCD(symbolClassDiagramm, "_Symbol", report)
+  reportCD(scopeClassDiagramm, "_Scope", report)
+
   decoratedSymbolTableCd = decorateForSymbolTablePackage(glex, cdScope, astClassDiagram, symbolClassDiagramm, scopeClassDiagramm, handcodedPath)
   generateFromCD(glex, astClassDiagram, decoratedSymbolTableCd, out, handcodedPath)
-
-  decoratedSerializationCd = decorateForSerializationPackage(glex, cdScope, astClassDiagram, symbolClassDiagramm, scopeClassDiagramm, handcodedPath)
-  generateFromCD(glex, astClassDiagram, decoratedSerializationCd, out, handcodedPath)
-
+  
   // M9 Generate ast classes, visitor and context condition
   decoratedVisitorCD = decorateForVisitorPackage(glex, cdScope, astClassDiagram, handcodedPath)
   generateEmfFromCD(glex, astClassDiagram, decoratedVisitorCD, out, handcodedPath)

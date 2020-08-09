@@ -19,7 +19,7 @@ import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.generating.templateengine.TemplateHookPoint;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.monticore.types.prettyprint.MCFullGenericTypesPrettyPrinter;
 
 import java.util.ArrayList;
@@ -106,10 +106,13 @@ public class ASTDecorator extends AbstractTransformer<ASTCDClass> {
 
         methodDecorator.disableTemplates();
         List<ASTCDMethod> methods = methodDecorator.getMutatorDecorator().decorate(attribute);
-        String generatedErrorCode = astService.getGeneratedErrorCode(clazz.getName() + attribute.getName());
-        methods.forEach(m ->
-            this.replaceTemplate(EMPTY_BODY, m, new TemplateHookPoint("_ast.ast_class.symboltable.InheritedSetEnclosingScope", generatedErrorCode,
+        String errorCode = astService.getGeneratedErrorCode(clazz.getName());
+        methods.stream().filter(m -> m.getName().equals("setEnclosingScope")).forEach(m ->
+            this.replaceTemplate(EMPTY_BODY, m, new TemplateHookPoint("_ast.ast_class.symboltable.InheritedSetEnclosingScope", errorCode,
                 MCFullGenericTypesMill.mcFullGenericTypesPrettyPrinter().prettyprint(m.getCDParameter(0).getMCType()), scopeInterfaceType)));
+        methods.stream().filter(m -> m.getName().equals("setSpannedScope")).forEach(m ->
+                this.replaceTemplate(EMPTY_BODY, m, new TemplateHookPoint("_ast.ast_class.symboltable.InheritedSetSpannedScope", errorCode,
+                        MCFullGenericTypesMill.mcFullGenericTypesPrettyPrinter().prettyprint(m.getCDParameter(0).getMCType()), scopeInterfaceType)));
         methodDecorator.enableTemplates();
         clazz.addAllCDMethods(methods);
       }

@@ -6,7 +6,9 @@ import de.monticore.expressions.commonexpressions._visitor.CommonExpressionsVisi
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.expressions.prettyprint.CommonExpressionsPrettyPrinter;
 import de.monticore.prettyprint.IndentPrinter;
-import de.monticore.types.typesymbols._symboltable.*;
+import de.monticore.symbols.oosymbols._symboltable.FieldSymbol;
+import de.monticore.symbols.oosymbols._symboltable.MethodSymbol;
+import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbol;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.ArrayList;
@@ -15,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static de.monticore.types.check.SymTypeConstant.unbox;
 import static de.monticore.types.check.TypeCheck.*;
 
 /**
@@ -40,21 +41,41 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
     realThis = this;
   }
 
+  @Override
+  public void traverse(ASTPlusPrefixExpression expr) {
+    SymTypeExpression innerResult = acceptThisAndReturnSymTypeExpression(expr.getExpression());
+    Optional<SymTypeExpression> wholeResult = calculatePlusPrefixExpression(expr, innerResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0174");
+  }
+
+  protected Optional<SymTypeExpression> calculatePlusPrefixExpression(ASTPlusPrefixExpression expr, SymTypeExpression innerResult) {
+    return getUnaryNumericPromotionType(innerResult);
+  }
+
+  @Override
+  public void traverse(ASTMinusPrefixExpression expr) {
+    SymTypeExpression innerResult = acceptThisAndReturnSymTypeExpression(expr.getExpression());
+    Optional<SymTypeExpression> wholeResult = calculateMinusPrefixExpression(expr, innerResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0175");
+  }
+
+  protected Optional<SymTypeExpression> calculateMinusPrefixExpression(ASTMinusPrefixExpression expr, SymTypeExpression innerResult) {
+    return getUnaryNumericPromotionType(innerResult);
+  }
+
+
   /**
    * We use traverse to collect the results of the two parts of the expression and calculate the result for the whole expression
    */
   @Override
   public void traverse(ASTPlusExpression expr) {
     //the "+"-operator also allows String
-    Optional<SymTypeExpression> wholeResult = getBinaryNumericPromotionWithString(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0210"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculatePlusExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0210");
+  }
+
+  protected Optional<SymTypeExpression> calculatePlusExpression(ASTPlusExpression expr) {
+    return getBinaryNumericPromotionWithString(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -62,15 +83,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTMultExpression expr) {
-    Optional<SymTypeExpression> wholeResult = getBinaryNumericPromotion(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0211"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateMultExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0211");
+  }
+
+  protected Optional<SymTypeExpression> calculateMultExpression(ASTMultExpression expr) {
+    return getBinaryNumericPromotion(expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -78,15 +96,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTDivideExpression expr) {
-    Optional<SymTypeExpression> wholeResult = getBinaryNumericPromotion(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0212"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateDivideExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0212");
+  }
+
+  protected Optional<SymTypeExpression> calculateDivideExpression(ASTDivideExpression expr) {
+    return getBinaryNumericPromotion(expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -94,15 +109,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void endVisit(ASTMinusExpression expr) {
-    Optional<SymTypeExpression> wholeResult = getBinaryNumericPromotion(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0213"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateMinusExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0213");
+  }
+
+  protected Optional<SymTypeExpression> calculateMinusExpression(ASTMinusExpression expr) {
+    return getBinaryNumericPromotion(expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -110,15 +122,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void endVisit(ASTModuloExpression expr) {
-    Optional<SymTypeExpression> wholeResult = getBinaryNumericPromotion(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0214"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateModuloExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0214");
+  }
+
+  protected Optional<SymTypeExpression> calculateModuloExpression(ASTModuloExpression expr) {
+    return getBinaryNumericPromotion(expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -126,15 +135,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTLessEqualExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeCompare(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0215"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateLessEqualExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0215");
+  }
+
+  protected Optional<SymTypeExpression> calculateLessEqualExpression(ASTLessEqualExpression expr) {
+    return calculateTypeCompare(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -142,15 +148,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTGreaterEqualExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeCompare(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0216"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateGreaterEqualExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0216");
+  }
+
+  protected Optional<SymTypeExpression> calculateGreaterEqualExpression(ASTGreaterEqualExpression expr) {
+    return calculateTypeCompare(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -158,15 +161,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTLessThanExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeCompare(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0217"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateLessThanExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0217");
+  }
+
+  protected Optional<SymTypeExpression> calculateLessThanExpression(ASTLessThanExpression expr) {
+    return calculateTypeCompare(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -174,15 +174,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTGreaterThanExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeCompare(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0218"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateGreaterThanExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0218");
+  }
+
+  protected Optional<SymTypeExpression> calculateGreaterThanExpression(ASTGreaterThanExpression expr) {
+    return calculateTypeCompare(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -190,15 +187,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTEqualsExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeLogical(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0219"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateEqualsExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0219");
+  }
+
+  protected Optional<SymTypeExpression> calculateEqualsExpression(ASTEqualsExpression expr) {
+    return calculateTypeLogical(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -206,15 +200,12 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTNotEqualsExpression expr) {
-    Optional<SymTypeExpression> wholeResult = calculateTypeLogical(expr.getLeft(), expr.getRight());
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0220"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateNotEqualsExpression(expr);
+    storeResultOrLogError(wholeResult, expr, "0xA0220");
+  }
+
+  protected Optional<SymTypeExpression> calculateNotEqualsExpression(ASTNotEqualsExpression expr) {
+    return calculateTypeLogical(expr, expr.getRight(), expr.getLeft());
   }
 
   /**
@@ -222,79 +213,37 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTBooleanAndOpExpression expr) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
-    if (expr.getLeft() != null) {
-      expr.getLeft().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0221"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getLeft())));
-    }
-    if (expr.getRight() != null) {
-      expr.getRight().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0222"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getRight())));
-    }
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getLeft(), "0xA0221");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getRight(), "0xA0222");
 
-    Optional<SymTypeExpression> wholeResult = Optional.empty();
-    if (isBoolean(leftResult) && isBoolean(rightResult)) {
-      wholeResult = Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
-    }
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0223"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    Optional<SymTypeExpression> wholeResult = calculateBooleanAndOpExpression(expr, leftResult, rightResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0223");
   }
 
-  /**
-   * We use traverse to collect the results of the two parts of the expression and calculate the result for the whole expression
-   */
-  @Override
-  public void endVisit(ASTBooleanOrOpExpression expr) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
-    if (expr.getLeft() != null) {
-      expr.getLeft().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0224"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getLeft())));
-    }
-    if (expr.getRight() != null) {
-      expr.getRight().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0225"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getRight())));
-    }
-
+  protected Optional<SymTypeExpression> calculateBooleanAndOpExpression(ASTBooleanAndOpExpression expr, SymTypeExpression leftResult, SymTypeExpression rightResult) {
     Optional<SymTypeExpression> wholeResult = Optional.empty();
     if (isBoolean(leftResult) && isBoolean(rightResult)) {
       wholeResult = Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0226"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+    return wholeResult;
+  }
+
+
+  @Override
+  public void endVisit(ASTBooleanOrOpExpression expr) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getLeft(), "0xA0224");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getRight(), "0xA0225");
+
+    Optional<SymTypeExpression> wholeResult = calculateBooleanOrOpExpression(expr, leftResult, rightResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0226");
+  }
+
+  protected Optional<SymTypeExpression> calculateBooleanOrOpExpression(ASTBooleanOrOpExpression expr, SymTypeExpression leftResult, SymTypeExpression rightResult) {
+    Optional<SymTypeExpression> wholeResult = Optional.empty();
+    if (isBoolean(leftResult) && isBoolean(rightResult)) {
+      wholeResult = Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
+    return wholeResult;
   }
 
   /**
@@ -302,28 +251,17 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTLogicalNotExpression expr) {
-    SymTypeExpression innerResult = null;
-    if (expr.getExpression() != null) {
-      expr.getExpression().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the inner part of the expression
-      innerResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0227"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getExpression())));
-    }
+    SymTypeExpression innerResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getExpression(), "0xA0227");
+    Optional<SymTypeExpression> wholeResult = calculateLogicalNotExpression(expr, innerResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0228");
+  }
+
+  protected Optional<SymTypeExpression> calculateLogicalNotExpression(ASTLogicalNotExpression expr, SymTypeExpression innerResult) {
     Optional<SymTypeExpression> wholeResult = Optional.empty();
     if (isBoolean(innerResult)) {
       wholeResult = Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0228"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    return wholeResult;
   }
 
   /**
@@ -331,25 +269,14 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTBracketExpression expr) {
-    SymTypeExpression innerResult = null;
-    if (expr.getExpression() != null) {
-      expr.getExpression().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the inner part of the expression
-      innerResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0229"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getExpression())));
-    }
+    SymTypeExpression innerResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getExpression(), "0xA0229");
+    Optional<SymTypeExpression> wholeResult = calculateBracketExpression(expr, innerResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0230");
+  }
+
+  protected Optional<SymTypeExpression> calculateBracketExpression(ASTBracketExpression expr, SymTypeExpression innerResult) {
     Optional<SymTypeExpression> wholeResult = Optional.of(innerResult);
-    if (wholeResult.isPresent()) {
-      //store the result of the whole expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0230"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    return wholeResult;
   }
 
   /**
@@ -357,59 +284,31 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTConditionalExpression expr) {
-    SymTypeExpression conditionResult = null;
-    SymTypeExpression trueResult = null;
-    SymTypeExpression falseResult = null;
+    SymTypeExpression conditionResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getCondition(), "0xA0231");
+    SymTypeExpression trueResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getTrueExpression(), "0xA0232");
+    SymTypeExpression falseResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getFalseExpression(), "0xA0233");
+    Optional<SymTypeExpression> wholeResult = calculateConditionalExpressionType(expr, conditionResult, trueResult, falseResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0234");
+  }
 
-    if (expr.getCondition() != null) {
-      expr.getCondition().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store the type of the "if" in a variable
-      conditionResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0231"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getCondition())));
-    }
-    if (expr.getTrueExpression() != null) {
-      expr.getTrueExpression().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store the type of the "then" in a variable
-      trueResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0232"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getTrueExpression())));
-    }
-    if (expr.getFalseExpression() != null) {
-      expr.getFalseExpression().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store the type of the "else" in a variable
-      falseResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0233"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getFalseExpression())));
-    }
+  protected Optional<SymTypeExpression> calculateConditionalExpressionType(ASTConditionalExpression expr,
+                                                                           SymTypeExpression conditionResult,
+                                                                           SymTypeExpression trueResult,
+                                                                           SymTypeExpression falseResult) {
     Optional<SymTypeExpression> wholeResult = Optional.empty();
     //condition has to be boolean
     if (isBoolean(conditionResult)) {
       //check if "then" and "else" are either from the same type or are in sub-supertype relation
-      if (trueResult.print().equals(falseResult.print())) {
+      if (compatible(trueResult, falseResult)) {
         wholeResult = Optional.of(trueResult);
-      } else if (isSubtypeOf(falseResult, trueResult)) {
-        wholeResult = Optional.of(trueResult);
-      } else if (isSubtypeOf(trueResult, falseResult)) {
+      } else if (compatible(falseResult, trueResult)) {
         wholeResult = Optional.of(falseResult);
       } else {
-        wholeResult = getBinaryNumericPromotion(expr.getTrueExpression(), expr.getFalseExpression());
+        // first argument can be null since it should not be relevant to the type calculation
+        wholeResult = getBinaryNumericPromotion(trueResult, falseResult);
       }
     }
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0234"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    return wholeResult;
   }
 
   /**
@@ -417,29 +316,18 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
    */
   @Override
   public void traverse(ASTBooleanNotExpression expr) {
-    SymTypeExpression innerResult = null;
-    if (expr.getExpression() != null) {
-      expr.getExpression().accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the inner part of the expression
-      innerResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0235"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr.getExpression())));
-    }
+    SymTypeExpression innerResult = acceptThisAndReturnSymTypeExpressionOrLogError(expr.getExpression(), "0xA0235");
+    Optional<SymTypeExpression> wholeResult = calculateBooleanNotExpression(expr, innerResult);
+    storeResultOrLogError(wholeResult, expr, "0xA0236");
+  }
+
+  protected Optional<SymTypeExpression> calculateBooleanNotExpression(ASTBooleanNotExpression expr, SymTypeExpression innerResult) {
     Optional<SymTypeExpression> wholeResult = Optional.empty();
     //the inner result has to be an integral type
-    if (innerResult instanceof SymTypeConstant && ((SymTypeConstant) innerResult).isIntegralType()) {
-      wholeResult = getUnaryIntegralPromotionType(lastResult.getLast());
+    if (isIntegralType(innerResult)) {
+      wholeResult = getUnaryIntegralPromotionType(typeCheckResult.getCurrentResult());
     }
-    if (wholeResult.isPresent()) {
-      //store the result of the expression in the last result
-      lastResult.setLast(wholeResult.get());
-      this.result = wholeResult.get();
-    } else {
-      lastResult.reset();
-      Log.error("0xA0236"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
-    }
+    return wholeResult;
   }
 
   /**
@@ -450,67 +338,64 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
     CommonExpressionsPrettyPrinter printer = new CommonExpressionsPrettyPrinter(new IndentPrinter());
     SymTypeExpression innerResult;
     expr.getExpression().accept(getRealThis());
-    if (lastResult.isPresentLast()) {
+    if (typeCheckResult.isPresentCurrentResult()) {
       //store the type of the inner expression in a variable
-      innerResult = lastResult.getLast();
+      innerResult = typeCheckResult.getCurrentResult();
       //look for this type in our scope
-      TypeSymbol innerResultType = innerResult.getTypeInfo();
+      OOTypeSymbol innerResultType = innerResult.getTypeInfo();
       //search for a method, field or type in the scope of the type of the inner expression
-      List<FieldSymbol> fieldSymbols = innerResult.getFieldList(expr.getName(),lastResult.isType());
-      Optional<TypeSymbol> typeSymbolOpt = innerResultType.getSpannedScope().resolveType(expr.getName());
+      List<FieldSymbol> fieldSymbols = innerResult.getFieldList(expr.getName(), typeCheckResult.isType());
+      Optional<OOTypeSymbol> typeSymbolOpt = innerResultType.getSpannedScope().resolveOOType(expr.getName());
       if (!fieldSymbols.isEmpty()) {
         //cannot be a method, test variable first
         //durch AST-Umbau kann ASTFieldAccessExpression keine Methode sein
         //if the last result is a type then filter for static field symbols
-        if(lastResult.isType()){
+        if(typeCheckResult.isType()){
           fieldSymbols = filterStaticFieldSymbols(fieldSymbols);
         }
         if (fieldSymbols.size() != 1) {
-          lastResult.reset();
-          Log.error("0xA0237"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+          typeCheckResult.reset();
+          logError("0xA0237", expr.get_SourcePositionStart());
         }
         if(!fieldSymbols.isEmpty()) {
           FieldSymbol var = fieldSymbols.get(0);
           SymTypeExpression type = var.getType();
-          this.result = type;
-          lastResult.setField();
-          lastResult.setLast(type);
+          typeCheckResult.setField();
+          typeCheckResult.setCurrentResult(type);
         }
       } else if (typeSymbolOpt.isPresent()) {
         //no variable found, test type
-        TypeSymbol typeSymbol = typeSymbolOpt.get();
+        OOTypeSymbol typeSymbol = typeSymbolOpt.get();
         boolean match = true;
         //if the last result is a type and the type is not static then it is not accessible
-        if(lastResult.isType()&&!typeSymbol.isIsStatic()){
+        if(typeCheckResult.isType()&&!typeSymbol.isIsStatic()){
           match = false;
         }
         if(match){
-          SymTypeExpression wholeResult = SymTypeExpressionFactory.createTypeExpression(typeSymbol.getFullName(), typeSymbol.getEnclosingScope());
-          this.result = wholeResult;
-          lastResult.setType();
-          lastResult.setLast(wholeResult);
+          SymTypeExpression wholeResult = SymTypeExpressionFactory.createTypeExpression(typeSymbol.getName(), typeSymbol.getEnclosingScope());
+          typeCheckResult.setType();
+          typeCheckResult.setCurrentResult(wholeResult);
         }else{
-          lastResult.reset();
-          Log.error("0xA0303"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+          typeCheckResult.reset();
+          logError("0xA0303", expr.get_SourcePositionStart());
         }
       }else{
-        lastResult.reset();
-        Log.error("0xA0306"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+        typeCheckResult.reset();
+        logError("0xA0306", expr.get_SourcePositionStart());
       }
     } else {
       //inner type has no result --> try to resolve a type
       String toResolve = printer.prettyprint(expr);
-      Optional<TypeSymbol> typeSymbolOpt = scope.resolveType(toResolve);
+      Optional<OOTypeSymbol> typeSymbolOpt = getScope(expr.getEnclosingScope()).resolveOOType(toResolve);
       if (typeSymbolOpt.isPresent()) {
-        TypeSymbol typeSymbol = typeSymbolOpt.get();
-        SymTypeExpression type = SymTypeExpressionFactory.createTypeExpression(typeSymbol.getFullName(), typeSymbol.getEnclosingScope());
-        this.result = type;
-        lastResult.setType();
-        lastResult.setLast(type);
+        OOTypeSymbol typeSymbol = typeSymbolOpt.get();
+        SymTypeExpression type = SymTypeExpressionFactory.createTypeExpression(typeSymbol.getName(), typeSymbol.getEnclosingScope());
+        typeCheckResult.setType();
+        typeCheckResult.setCurrentResult(type);
       } else {
         //the inner type has no result and there is no type found
-        lastResult.reset();
-        Log.info("package suspected", "CommonExpressionsTypesCalculator");
+        typeCheckResult.reset();
+        Log.info("package suspected", "DeriveSymTypeOfCommonExpressions");
       }
     }
   }
@@ -528,14 +413,14 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
     expr.accept(visitor);
     SymTypeExpression innerResult;
     expr.getExpression().accept(getRealThis());
-    if (lastResult.isPresentLast()) {
-      innerResult = lastResult.getLast();
+    if (typeCheckResult.isPresentCurrentResult()) {
+      innerResult = typeCheckResult.getCurrentResult();
       //resolve methods with name of the inner expression
-      List<MethodSymbol> methodlist = innerResult.getMethodList(expr.getName(),lastResult.isType());
+      List<MethodSymbol> methodlist = innerResult.getMethodList(expr.getName(), typeCheckResult.isType());
       //count how many methods can be found with the correct arguments and return type
       List<MethodSymbol> fittingMethods = getFittingMethods(methodlist,expr);
       //if the last result is static then filter for static methods
-      if(lastResult.isType()){
+      if(typeCheckResult.isType()){
         fittingMethods = filterStaticMethodSymbols(fittingMethods);
       }
       //there can only be one method with the correct arguments and return type
@@ -543,48 +428,46 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
         if (fittingMethods.size() > 1) {
           SymTypeExpression returnType = fittingMethods.get(0).getReturnType();
           for (MethodSymbol method : fittingMethods) {
-            if (!returnType.print().equals(method.getReturnType().print())) {
-              Log.error("0xA0238"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+            if (!returnType.deepEquals(method.getReturnType())) {
+              logError("0xA0238", expr.get_SourcePositionStart());
             }
           }
         }
         SymTypeExpression result = fittingMethods.get(0).getReturnType();
-        this.result = result;
-        lastResult.setMethod();
-        lastResult.setLast(result);
+        typeCheckResult.setMethod();
+        typeCheckResult.setCurrentResult(result);
       } else {
-        lastResult.reset();
-        Log.error("0xA0239"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+        typeCheckResult.reset();
+        logError("0xA0239", expr.get_SourcePositionStart());
       }
     } else {
-      Collection<MethodSymbol> methodcollection = scope.resolveMethodMany(expr.getName());
+      Collection<MethodSymbol> methodcollection = getScope(expr.getEnclosingScope()).resolveMethodMany(expr.getName());
       List<MethodSymbol> methodlist = new ArrayList<>(methodcollection);
       //count how many methods can be found with the correct arguments and return type
       List<MethodSymbol> fittingMethods = getFittingMethods(methodlist,expr);
       //there can only be one method with the correct arguments and return type
       if (fittingMethods.size() == 1) {
         Optional<SymTypeExpression> wholeResult = Optional.of(fittingMethods.get(0).getReturnType());
-        this.result = wholeResult.get();
-        lastResult.setMethod();
-        lastResult.setLast(wholeResult.get());
+        typeCheckResult.setMethod();
+        typeCheckResult.setCurrentResult(wholeResult.get());
       } else {
-        lastResult.reset();
-        Log.error("0xA0240"+String.format(ERROR_MSG,prettyPrinter.prettyprint(expr)));
+        typeCheckResult.reset();
+        logError("0xA0240", expr.get_SourcePositionStart());
       }
     }
   }
 
-  List<MethodSymbol> getFittingMethods(List<MethodSymbol> methodlist, ASTCallExpression expr){
+  private List<MethodSymbol> getFittingMethods(List<MethodSymbol> methodlist, ASTCallExpression expr){
     List<MethodSymbol> fittingMethods = new ArrayList<>();
     for (MethodSymbol method : methodlist) {
       //for every method found check if the arguments are correct
-      if (expr.getArguments().getExpressionList().size() == method.getParameterList().size()) {
+      if (expr.getArguments().getExpressionsList().size() == method.getParameterList().size()) {
         boolean success = true;
         for (int i = 0; i < method.getParameterList().size(); i++) {
-          expr.getArguments().getExpression(i).accept(getRealThis());
+          expr.getArguments().getExpressions(i).accept(getRealThis());
           //test if every single argument is correct
-          if (!method.getParameterList().get(i).getType().print().equals(lastResult.getLast().print()) &&
-              !compatible(lastResult.getLast(), method.getParameterList().get(i).getType())) {
+          if (!method.getParameterList().get(i).getType().deepEquals(typeCheckResult.getCurrentResult()) &&
+              !compatible(method.getParameterList().get(i).getType(), typeCheckResult.getCurrentResult())) {
             success = false;
           }
         }
@@ -604,29 +487,18 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
   /**
    * helper method for <=, >=, <, > -> calculates the result of these expressions
    */
-  private Optional<SymTypeExpression> calculateTypeCompare(ASTExpression left, ASTExpression right) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
-    if (left != null) {
-      left.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0241"+String.format(ERROR_MSG,prettyPrinter.prettyprint(left)));
-    }
-    if (right != null) {
-      right.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0242"+String.format(ERROR_MSG,prettyPrinter.prettyprint(right)));
-    }
+  private Optional<SymTypeExpression> calculateTypeCompare(ASTInfixExpression expr, ASTExpression right, ASTExpression left) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(left, "0xA0241");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(right, "0xA0242");
+    return calculateTypeCompare(expr, rightResult, leftResult);
+  }
 
-    //if the left and the right part of the expression are numerics, then the whole expression is a boolean
+  /**
+   * helper method for <=, >=, <, > -> calculates the result of these expressions
+   */
+  protected Optional<SymTypeExpression> calculateTypeCompare(ASTInfixExpression expr, SymTypeExpression rightResult, SymTypeExpression leftResult) {
+    // if the left and the right part of the expression are numerics,
+    // then the whole expression is a boolean
     if (isNumericType(leftResult) && isNumericType(rightResult)) {
       return Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
@@ -637,38 +509,25 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
   /**
    * helper method for the calculation of the ASTEqualsExpression and the ASTNotEqualsExpression
    */
-  private Optional<SymTypeExpression> calculateTypeLogical(ASTExpression left, ASTExpression right) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
-    if (left != null) {
-      left.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0244"+String.format(ERROR_MSG,prettyPrinter.prettyprint(left)));
-    }
-    if (right != null) {
-      right.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0245"+String.format(ERROR_MSG,prettyPrinter.prettyprint(right)));
-    }
-    //Option one: they are both numeric types or they are both booleans
+  private Optional<SymTypeExpression> calculateTypeLogical(ASTInfixExpression expr, ASTExpression right, ASTExpression left) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(left, "0xA0244");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(right, "0xA0245");
+    return calculateTypeLogical(expr, rightResult, leftResult);
+  }
+
+  /**
+   * helper method for the calculation of the ASTEqualsExpression and the ASTNotEqualsExpression
+   */
+  protected Optional<SymTypeExpression> calculateTypeLogical(ASTInfixExpression expr, SymTypeExpression rightResult, SymTypeExpression leftResult) {
+    //Option one: they are both numeric types
     if (isNumericType(leftResult) && isNumericType(rightResult)
         || isBoolean(leftResult) && isBoolean(rightResult)) {
       return Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
     //Option two: none of them is a primitive type and they are either the same type or in a super/sub type relation
-    if (!isPrimitiveType(leftResult) && !isPrimitiveType(rightResult) &&
-        (leftResult.print().equals(rightResult.print())
-            || isSubtypeOf(rightResult, leftResult)
-            || isSubtypeOf(leftResult, rightResult)
-        )) {
+    if (!leftResult.isTypeConstant() && !rightResult.isTypeConstant() &&
+        (compatible(leftResult, rightResult) || compatible(rightResult, leftResult))
+    ) {
       return Optional.of(SymTypeExpressionFactory.createTypeConstant("boolean"));
     }
     //should never happen, no valid result, error will be handled in traverse
@@ -678,28 +537,18 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
   /**
    * return the result for the five basic arithmetic operations (+,-,*,/,%)
    */
-  protected Optional<SymTypeExpression> getBinaryNumericPromotion(ASTExpression leftType,
-                                                                  ASTExpression rightType) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
-    if (leftType != null) {
-      leftType.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0246"+String.format(ERROR_MSG,prettyPrinter.prettyprint(leftType)));    }
-    if (rightType != null) {
-      rightType.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0247"+String.format(ERROR_MSG,prettyPrinter.prettyprint(rightType)));
-    }
+  private Optional<SymTypeExpression> getBinaryNumericPromotion(ASTExpression leftType,
+                                                                ASTExpression rightType) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(leftType, "0xA0246");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(rightType, "0xA0247");
 
+    return getBinaryNumericPromotion(leftResult, rightResult);
+  }
+
+  /**
+   * return the result for the five basic arithmetic operations (+,-,*,/,%)
+   */
+  protected Optional<SymTypeExpression> getBinaryNumericPromotion(SymTypeExpression leftResult, SymTypeExpression rightResult) {
     //if one part of the expression is a double and the other is another numeric type then the result is a double
     if ((isDouble(leftResult) && isNumericType(rightResult)) ||
         (isDouble(rightResult) && isNumericType(leftResult))) {
@@ -713,12 +562,10 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
         (isLong(rightResult) && isNumericType(leftResult))) {
       return Optional.of(SymTypeExpressionFactory.createTypeConstant("long"));
       //no part of the expression is a long -> if both parts are numeric types then the result is a int
-    } else {
-      if (leftResult.isPrimitive()&&((SymTypeConstant)leftResult).isIntegralType()
-          &&rightResult.isPrimitive()&&((SymTypeConstant)rightResult).isIntegralType()
-      ) {
-        return Optional.of(SymTypeExpressionFactory.createTypeConstant("int"));
-      }
+    } else if (leftResult.isTypeConstant() && isIntegralType(leftResult)
+        && rightResult.isTypeConstant() && isIntegralType(rightResult)
+    ) {
+      return Optional.of(SymTypeExpressionFactory.createTypeConstant("int"));
     }
     //should never happen, no valid result, error will be handled in traverse
     return Optional.empty();
@@ -727,66 +574,33 @@ public class DeriveSymTypeOfCommonExpressions extends DeriveSymTypeOfExpression 
   /**
    * return the result for the "+"-operation if Strings
    */
-  public Optional<SymTypeExpression> getBinaryNumericPromotionWithString(ASTExpression leftType,
-                                                                         ASTExpression rightType) {
-    SymTypeExpression leftResult = null;
-    SymTypeExpression rightResult = null;
+  private Optional<SymTypeExpression> getBinaryNumericPromotionWithString(ASTExpression expr, ASTExpression rightType, ASTExpression leftType) {
+    SymTypeExpression leftResult = acceptThisAndReturnSymTypeExpressionOrLogError(leftType, "0xA0248");
+    SymTypeExpression rightResult = acceptThisAndReturnSymTypeExpressionOrLogError(rightType, "0xA0249");
+    return getBinaryNumericPromotionWithString(expr, rightResult, leftResult);
+  }
 
-    if (leftType != null) {
-      leftType.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the left part of the expression
-      leftResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0248 The resulting type of "+prettyPrinter.prettyprint(leftType)+" cannot be calculated");
-    }
-    if (rightType != null) {
-      rightType.accept(getRealThis());
-    }
-    if (lastResult.isPresentLast()) {
-      //store result of the right part of the expression
-      rightResult = lastResult.getLast();
-    } else {
-      Log.error("0xA0249 The resulting type of "+prettyPrinter.prettyprint(rightType)+" cannot be calculated");
-    }
+  /**
+   * return the result for the "+"-operation if Strings
+   */
+  protected Optional<SymTypeExpression> getBinaryNumericPromotionWithString(ASTExpression expr, SymTypeExpression rightResult, SymTypeExpression leftResult) {
+
     //if one part of the expression is a String then the whole expression is a String
     if (isString(leftResult) || isString(rightResult)) {
-      return Optional.of(SymTypeExpressionFactory.createTypeObject("String", scope));
+      return Optional.of(SymTypeExpressionFactory.createTypeObject("String", getScope(expr.getEnclosingScope())));
     }
     //no String in the expression -> use the normal calculation for the basic arithmetic operators
-    return getBinaryNumericPromotion(leftType, rightType);
-  }
-
-  /**
-   * test if the expression is of numeric type (double, float, long, int, char, short, byte)
-   */
-  private boolean isNumericType(SymTypeExpression ex) {
-    return (isDouble(ex) || isFloat(ex) ||
-        isLong(ex) || isInt(ex) ||
-        isChar(ex) || isShort(ex) ||
-        isByte(ex)
-    );
-  }
-
-  /**
-   * test if the expression is a primitive type
-   */
-  private boolean isPrimitiveType(SymTypeExpression ex) {
-    return isNumericType(ex) || isBoolean(ex);
+    return getBinaryNumericPromotion(leftResult, rightResult);
   }
 
   /**
    * helper method for the calculation of the ASTBooleanNotExpression
    */
-  public static Optional<SymTypeExpression> getUnaryIntegralPromotionType(SymTypeExpression type) {
-    if(!isLong(type)&&type.isPrimitive()&&((SymTypeConstant)type).isIntegralType()){
+  protected Optional<SymTypeExpression> getUnaryIntegralPromotionType(SymTypeExpression type) {
+    if(!isLong(type)&&type.isTypeConstant()&&((SymTypeConstant)type).isIntegralType()){
       return Optional.of(SymTypeExpressionFactory.createTypeConstant("int"));
     }
     return Optional.empty();
   }
 
-  public void setLastResult(LastResult lastResult) {
-    this.lastResult = lastResult;
-  }
 }

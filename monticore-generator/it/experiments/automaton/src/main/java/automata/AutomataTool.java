@@ -5,7 +5,6 @@ import automata._ast.ASTAutomaton;
 import automata._cocos.AutomataCoCoChecker;
 import automata._parser.AutomataParser;
 import automata._symboltable.*;
-import automata._symboltable.serialization.AutomataScopeDeSer;
 import automata.cocos.AtLeastOneInitialAndFinalState;
 import automata.cocos.StateNameStartsWithCapitalLetter;
 import automata.cocos.TransitionSourceExists;
@@ -16,7 +15,6 @@ import de.se_rwth.commons.logging.Log;
 import org.antlr.v4.runtime.RecognitionException;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -26,8 +24,6 @@ import java.util.Optional;
  */
 public class AutomataTool {
 
-  public static final Path DEFAULT_SYMBOL_LOCATION = Paths.get("target");
-
   /**
    * Use the single argument for specifying the single input automaton file.
    *
@@ -36,41 +32,37 @@ public class AutomataTool {
   public static void main(String[] args) {
 
     // use normal logging (no DEBUG, TRACE)
-    Log.init();
-
+    Log.ensureInitalization();
+    
     // Retrieve the model name
-    if (args.length != 1) {
-      Log.error("0xEE7400 Please specify only one single path to the input model.");
+    if (args.length != 2) {
+      Log.error("0xEE7400 Please specify 1. the path to the input model and 2. the path to store symbols.");
       return;
     }
-    Log.info("Automaton DSL Tool", AutomataTool.class.getName());
-    Log.info("------------------", AutomataTool.class.getName());
+    Log.info("Automaton DSL Tool", "AutomataTool");
+    Log.info("------------------", "AutomataTool");
     String model = args[0];
-
-    // setup the language infrastructure
-    AutomataLanguage lang = new AutomataLanguage();
 
     // parse the model and create the AST representation
     ASTAutomaton ast = parse(model);
-    Log.info(model + " parsed successfully!", AutomataTool.class.getName());
+    Log.info(model + " parsed successfully!", "AutomataTool");
 
     // setup the symbol table
-    AutomataArtifactScope modelTopScope =
-            createSymbolTable(lang, ast);
-
+    AutomataArtifactScope modelTopScope = createSymbolTable(ast);
+    
     // can be used for resolving names in the model
     Optional<StateSymbol> aSymbol =
             modelTopScope.resolveState("Ping");
     if (aSymbol.isPresent()) {
       Log.info("Resolved state symbol \"Ping\"; FQN = "
                + aSymbol.get().toString(),
-          AutomataTool.class.getName());
+          "AutomataTool");
     } else {
       Log.info("This automaton does not contain a state called \"Ping\";",
-          AutomataTool.class.getName());
+          "AutomataTool");
     }
 
-    // setup context condition insfrastructure
+    // setup context condition infrastructure
     AutomataCoCoChecker checker = new AutomataCoCoChecker();
 
     // add a custom set of context conditions
@@ -86,18 +78,19 @@ public class AutomataTool {
     // store artifact scope and its symbols
     AutomataScopeDeSer deser = new AutomataScopeDeSer();
     deser.setSymbolFileExtension("autsym");
-    deser.store(modelTopScope, DEFAULT_SYMBOL_LOCATION);
+    deser.store(modelTopScope, Paths.get(args[1]));
 
     // analyze the model with a visitor
     CountStates cs = new CountStates();
     cs.handle(ast);
-    Log.info("The model contains " + cs.getCount() + " states.", AutomataTool.class.getName());
+    Log.info("The model contains " + cs.getCount() + " states.", "AutomataTool");
 
     // execute a pretty printer
     PrettyPrinter pp = new PrettyPrinter();
     pp.handle(ast);
-    Log.info("Pretty printing the parsed automaton into console:", AutomataTool.class.getName());
-    System.out.println(pp.getResult());
+    Log.info("Pretty printing the parsed automaton into console:", "AutomataTool");
+    // print the result
+    Log.println(pp.getResult());
   }
 
   /**
@@ -126,16 +119,22 @@ public class AutomataTool {
   /**
    * Create the symbol table from the parsed AST.
    *
-   * @param lang
    * @param ast
    * @return
    */
-  public static AutomataArtifactScope createSymbolTable(AutomataLanguage lang, ASTAutomaton ast) {
+  public static AutomataArtifactScope createSymbolTable(ASTAutomaton ast) {
 
-    AutomataGlobalScope globalScope = new AutomataGlobalScope(new ModelPath(), lang);
+    AutomataGlobalScope globalScope = AutomataMill
+        .automataGlobalScopeBuilder()
+        .setModelPath(new ModelPath())
+        .setModelFileExtension("aut")
+        .build();
 
-    AutomataSymbolTableCreatorDelegator symbolTable = lang.getSymbolTableCreator(
-         globalScope);
+    AutomataSymbolTableCreator symbolTable = AutomataMill
+        .automataSymbolTableCreatorBuilder()
+        .addToScopeStack(globalScope)
+        .build();
+
     return symbolTable.createFromAST(ast);
   }
 

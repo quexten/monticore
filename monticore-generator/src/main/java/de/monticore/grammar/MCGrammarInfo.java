@@ -61,7 +61,11 @@ public class MCGrammarInfo {
    * Internal: LexNamer for naming lexer symbols in the antlr source code
    */
   private LexNamer lexNamer = new LexNamer();
-  
+
+  private Map<String, String> splitRules = Maps.newHashMap();
+
+  private List<String> keywordRules = Lists.newArrayList();
+
   /**
    * The symbol of the processed grammar
    */
@@ -71,11 +75,29 @@ public class MCGrammarInfo {
     this.grammarSymbol = grammarSymbol;
     buildLexPatterns();
     findAllKeywords();
+    grammarSymbol.getTokenRulesWithInherited().forEach(t -> addSplitRule(t));
+    keywordRules = Lists.newArrayList(keywordRules);
     addSubRules();
     addHWAntlrCode();
     addLeftRecursiveRules();
   }
-  
+
+  private void addSplitRule(String s) {
+    String name = "";
+    for (char c:s.toCharArray()) {
+      name += getLexNamer().getConstantName(String.valueOf(c));
+    }
+    splitRules.put(s, name.toLowerCase());
+  }
+
+  public Map<String, String> getSplitRules() {
+    return splitRules;
+  }
+
+  public List<String> getKeywordRules() {
+    return keywordRules;
+  }
+
   // ------------- Handling of the antlr concept -----------------------------
   
   /**
@@ -241,7 +263,7 @@ public class MCGrammarInfo {
     boolean found = false;
     
     // Check with options
-    if (mustBeKeyword(name, grammar)) {
+    if (mustBeKeyword(name)) {
       matches = true;
       found = true;
     }
@@ -308,9 +330,11 @@ public class MCGrammarInfo {
             }
           }
           for (ASTConstant keyword : ASTNodes.getSuccessors(astProd, ASTConstant.class)) {
-            if (isKeyword(keyword.getName(), grammarSymbol)
-                || (isRefGrammarSymbol && isKeyword(keyword.getName(), refGrammarSymbol.get()))) {
-              keywords.add(keyword.getName());
+            if (!keyword.isPresentKeyConstant()) {
+              if (isKeyword(keyword.getName(), grammarSymbol)
+                      || (isRefGrammarSymbol && isKeyword(keyword.getName(), refGrammarSymbol.get()))) {
+                keywords.add(keyword.getName());
+              }
             }
           }
         }
@@ -346,7 +370,7 @@ public class MCGrammarInfo {
     }
   }
   
-  private boolean mustBeKeyword(String rule, MCGrammarSymbol grammar) {
+  private boolean mustBeKeyword(String rule) {
     return keywords.contains(rule);
   }
   

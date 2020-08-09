@@ -5,7 +5,7 @@ package de.monticore.codegen.mc2cd.transl;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.codegen.mc2cd.MCGrammarSymbolTableHelper;
 import de.monticore.grammar.grammar._ast.*;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.monticore.utils.Link;
 import de.se_rwth.commons.StringTransformations;
 
@@ -65,15 +65,8 @@ public class NameTranslation implements
             link.target().setName(nameToUse);
         }
 
-        for (Link<ASTTerminal, ASTCDAttribute> link : rootLink.getLinks(ASTTerminal.class,
+        for (Link<ASTITerminal, ASTCDAttribute> link : rootLink.getLinks(ASTITerminal.class,
                 ASTCDAttribute.class)) {
-            Optional<String> usageName = getUsageName(rootLink.source(), link.source());
-            String nameToUse = usageName.isPresent() ? usageName.get() : link.source().getName();
-            link.target().setName(nameToUse);
-        }
-
-        for (Link<ASTKeyTerminal, ASTCDAttribute> link : rootLink.getLinks(ASTKeyTerminal.class,
-            ASTCDAttribute.class)) {
             Optional<String> usageName = getUsageName(rootLink.source(), link.source());
             String nameToUse = usageName.isPresent() ? usageName.get() : link.source().getName();
             link.target().setName(nameToUse);

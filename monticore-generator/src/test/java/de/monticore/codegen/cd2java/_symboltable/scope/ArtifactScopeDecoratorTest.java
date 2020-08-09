@@ -17,7 +17,7 @@ import de.monticore.codegen.cd2java.methods.MethodDecorator;
 import de.monticore.generating.GeneratorEngine;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
-import de.se_rwth.commons.logging.Log;
+import de.se_rwth.commons.logging.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,7 +59,8 @@ public class ArtifactScopeDecoratorTest extends DecoratorTestCase {
 
   @Before
   public void setUp() {
-    Log.init();
+    LogStub.init();         // replace log by a sideffect free variant
+        // LogStub.initPlusLog();  // for manual testing purpose only
     this.glex = new GlobalExtensionManagement();
     this.MCTypeFacade = MCTypeFacade.getInstance();
 
@@ -161,13 +162,12 @@ public class ArtifactScopeDecoratorTest extends DecoratorTestCase {
   @Test
   public void testImportsAttribute() {
     ASTCDAttribute astcdAttribute = getAttributeBy("imports", scopeClass);
-    assertDeepEquals(CDModifier.PRIVATE, astcdAttribute.getModifier());
     assertListOf(IMPORT_STATEMENT, astcdAttribute.getMCType());
   }
 
   @Test
   public void testMethodCount() {
-    assertEquals(46, scopeClass.getCDMethodList().size());
+    assertEquals(45, scopeClass.getCDMethodList().size());
   }
 
   @Test
@@ -194,7 +194,7 @@ public class ArtifactScopeDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testGetImportListMethod() {
-    ASTCDMethod method = getMethodBy("getImportList", scopeClass);
+    ASTCDMethod method = getMethodBy("getImportsList", scopeClass);
 
     assertDeepEquals(PUBLIC, method.getModifier());
     assertDeepEquals(MCTypeFacade.createListTypeOf(IMPORT_STATEMENT), method.getMCReturnType().getMCType());
@@ -205,7 +205,7 @@ public class ArtifactScopeDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSetImportsListMethod() {
-    ASTCDMethod method = getMethodBy("setImportList", scopeClass);
+    ASTCDMethod method = getMethodBy("setImportsList", scopeClass);
 
     assertDeepEquals(PUBLIC, method.getModifier());
     assertTrue(method.getMCReturnType().isPresentMCVoidType());
@@ -257,18 +257,6 @@ public class ArtifactScopeDecoratorTest extends DecoratorTestCase {
     assertEquals(1, method.sizeCDParameters());
     assertDeepEquals(String.class, method.getCDParameter(0).getMCType());
     assertEquals("symbolName", method.getCDParameter(0).getName());
-  }
-
-  @Test
-  public void testGetFilePathMethod() {
-    ASTCDMethod method = getMethodBy("getFilePath", scopeClass);
-
-    assertDeepEquals(PUBLIC, method.getModifier());
-    assertDeepEquals(PATH, method.getMCReturnType().getMCType());
-
-    assertEquals(1, method.sizeCDParameters());
-    assertDeepEquals("de.monticore.codegen.ast.automaton._symboltable.AutomatonLanguage", method.getCDParameter(0).getMCType());
-    assertEquals("lang", method.getCDParameter(0).getName());
   }
 
   @Test

@@ -3,7 +3,7 @@ package de.monticore.codegen.cd2java._visitor;
 
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.cd4analysis._symboltable.CDDefinitionSymbol;
-import de.monticore.cd.cd4code._ast.CD4CodeMill;
+import de.monticore.cd.cd4code.CD4CodeMill;
 import de.monticore.codegen.cd2java.AbstractCreator;
 import de.monticore.codegen.cd2java._symboltable.SymbolTableService;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
@@ -13,25 +13,22 @@ import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
-import de.monticore.types.mcfullgenerictypes._ast.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.monticore.types.prettyprint.MCSimpleGenericTypesPrettyPrinter;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.StringTransformations;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static de.monticore.cd.facade.CDModifier.PRIVATE;
+import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static de.monticore.codegen.cd2java.CoreTemplates.EMPTY_BODY;
 import static de.monticore.codegen.cd2java.CoreTemplates.VALUE;
 import static de.monticore.codegen.cd2java._ast.ast_class.ASTConstants.AST_INTERFACE;
-import static de.monticore.codegen.cd2java._symboltable.SymbolTableConstants.I_SYMBOL;
 import static de.monticore.codegen.cd2java._symboltable.SymbolTableConstants.I_SCOPE;
+import static de.monticore.codegen.cd2java._symboltable.SymbolTableConstants.I_SYMBOL;
 import static de.monticore.codegen.cd2java._visitor.VisitorConstants.*;
-import static de.monticore.cd.facade.CDModifier.*;
 
 /**
  * creates a DelegatorVisitor class from a grammar
@@ -266,11 +263,13 @@ public class DelegatorVisitorDecorator extends AbstractCreator<ASTCDCompilationU
   protected List<ASTCDMethod> createVisitorDelegatorScopeMethods(ASTCDDefinition astcdDefinition, String simpleVisitorName) {
     List<ASTCDMethod> visitorMethods = new ArrayList<>();
     CDDefinitionSymbol cdSymbol = astcdDefinition.getSymbol();
-    ASTMCQualifiedType scopeType = getMCTypeFacade().createQualifiedType(symbolTableService.getScopeClassFullName(cdSymbol));
+    ASTMCQualifiedType scopeClassType = getMCTypeFacade().createQualifiedType(symbolTableService.getScopeClassFullName(cdSymbol));
+    ASTMCQualifiedType scopeInterfaceType = getMCTypeFacade().createQualifiedType(symbolTableService.getScopeInterfaceFullName(cdSymbol));
     ASTMCQualifiedType artifactScopeType = getMCTypeFacade().createQualifiedType(symbolTableService.getArtifactScopeFullName(cdSymbol));
     
-    visitorMethods.addAll(createVisitorDelegatorScopeMethod(scopeType, simpleVisitorName));
-    
+    visitorMethods.addAll(createVisitorDelegatorScopeMethod(scopeClassType, simpleVisitorName));
+    visitorMethods.addAll(createVisitorDelegatorScopeMethod(scopeInterfaceType, simpleVisitorName));
+
     // only create artifact scope methods if grammar contains productions or
     // refers to a starting production of a super grammar
     if (symbolTableService.hasProd(astcdDefinition) || symbolTableService.hasStartProd(astcdDefinition)) {

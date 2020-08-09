@@ -4,6 +4,7 @@ package de.monticore.codegen.cd2java._ast.ast_new.reference.referencedSymbol;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import de.monticore.cd.cd4analysis.CD4AnalysisMill;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.prettyprint.CD4CodePrinter;
 import de.monticore.codegen.cd2java.AbstractService;
@@ -32,7 +33,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
 
   private ASTCDClass originalClass;
 
-  private static final String NAME_SYMBOL_MAP = "Map<String,de.monticore.codegen.ast.referencedsymbol._symboltable.FooSymbolLoader>";
+  private static final String NAME_SYMBOL_MAP = "Map<String,de.monticore.codegen.ast.referencedsymbol._symboltable.FooSymbolSurrogate>";
 
   @Before
   public void setup() {
@@ -77,7 +78,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
 
   @Test
   public void testSymbolAttribute() {
-    ASTCDAttribute symbolAttribute = getAttributeBy("nameSymbolLoader", astClass);
+    ASTCDAttribute symbolAttribute = getAttributeBy("nameSymbolSurrogate", astClass);
     assertTrue(symbolAttribute.getModifier().isProtected());
     assertDeepEquals(NAME_SYMBOL_MAP, symbolAttribute.getMCType());
   }
@@ -88,8 +89,8 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
   }
 
   @Test
-  public void testUpdateNameSymbolLoaderListMethod() {
-    ASTCDMethod method = getMethodBy("updateNameSymbolLoader", astClass);
+  public void testUpdateNameSymbolSurrogateListMethod() {
+    ASTCDMethod method = getMethodBy("updateNameSymbolSurrogate", astClass);
     assertDeepEquals(PROTECTED, method.getModifier());
     assertTrue(method.getMCReturnType().isPresentMCVoidType());
     assertTrue(method.isEmptyCDParameters());

@@ -3,9 +3,12 @@
 package de.monticore.grammar.grammar._symboltable;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.monticore.grammar.grammar._ast.ASTMCGrammar;
 import de.monticore.grammar.grammar_withconcepts._symboltable.Grammar_WithConceptsArtifactScope;
-import de.monticore.grammar.grammar_withconcepts._symboltable.IGrammar_WithConceptsGlobalScope;
+import de.monticore.grammar.grammar_withconcepts._symboltable.Grammar_WithConceptsGlobalScope;
 import de.se_rwth.commons.Names;
 
 import java.util.*;
@@ -123,6 +126,34 @@ public class MCGrammarSymbol extends MCGrammarSymbolTOP {
     return ret;
   }
 
+  public Collection<String> getTokenRulesWithInherited() {
+    final Collection<String> ret = Sets.newHashSet();
+
+    for (int i = superGrammars.size() - 1; i >= 0; i--) {
+      final MCGrammarSymbolLoader superGrammarRef = superGrammars.get(i);
+
+      if (superGrammarRef.isSymbolLoaded()) {
+        ret.addAll(superGrammarRef.getLoadedSymbol().getTokenRulesWithInherited());
+      }
+    }
+    forEachSplitRules(t -> ret.add(t));
+    return ret;
+  }
+
+  public Collection<String> getKeywordRulesWithInherited() {
+    final Collection<String> ret = Sets.newHashSet();
+
+    for (int i = superGrammars.size() - 1; i >= 0; i--) {
+      final MCGrammarSymbolLoader superGrammarRef = superGrammars.get(i);
+
+      if (superGrammarRef.isSymbolLoaded()) {
+        ret.addAll(superGrammarRef.getLoadedSymbol().getKeywordRulesWithInherited());
+      }
+    }
+    forEachNoKeywords(t -> ret.add(t));
+    return ret;
+  }
+
   public Optional<ASTMCGrammar> getAstGrammar() {
     return this.astNode;
   }
@@ -156,7 +187,7 @@ public class MCGrammarSymbol extends MCGrammarSymbolTOP {
         break;
       }
 
-      if (!(currentScope instanceof IGrammar_WithConceptsGlobalScope)) {
+      if (!(currentScope instanceof Grammar_WithConceptsGlobalScope)) {
         if (currentScope instanceof Grammar_WithConceptsArtifactScope) {
           // We have reached the artifact scope. Get the package name from the
           // symbol itself, since it might be set manually.
