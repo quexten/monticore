@@ -33,7 +33,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
 
   private ASTCDClass originalClass;
 
-  private static final String NAME_SYMBOL_MAP = "Map<String,de.monticore.codegen.ast.referencedsymbol._symboltable.FooSymbolSurrogate>";
+  private static final String NAME_SYMBOL_MAP = "Map<String,de.monticore.codegen.ast.referencedsymbol._symboltable.FooSymbol>";
 
   @Before
   public void setup() {
@@ -69,7 +69,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
     assertTrue(nameAttribute.getModifier().isProtected());
     assertTrue(nameAttribute.getModifier().isPresentStereotype());
     ASTCDStereotype stereotype = nameAttribute.getModifier().getStereotype();
-    assertEquals(1, stereotype.sizeValues());
+    assertEquals(1, stereotype.sizeValue());
     assertEquals("referencedSymbol", stereotype.getValue(0).getName());
     assertTrue(stereotype.getValue(0).isPresentValue());
     assertEquals("de.monticore.codegen.ast.referencedsymbol._symboltable.FooSymbol", stereotype.getValue(0).getValue());
@@ -78,7 +78,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
 
   @Test
   public void testSymbolAttribute() {
-    ASTCDAttribute symbolAttribute = getAttributeBy("nameSymbolSurrogate", astClass);
+    ASTCDAttribute symbolAttribute = getAttributeBy("nameSymbol", astClass);
     assertTrue(symbolAttribute.getModifier().isProtected());
     assertDeepEquals(NAME_SYMBOL_MAP, symbolAttribute.getMCType());
   }
@@ -90,7 +90,7 @@ public class ASTReferencedSymbolDecoratorListTest extends DecoratorTestCase {
 
   @Test
   public void testUpdateNameSymbolSurrogateListMethod() {
-    ASTCDMethod method = getMethodBy("updateNameSymbolSurrogate", astClass);
+    ASTCDMethod method = getMethodBy("updateNameSymbol", astClass);
     assertDeepEquals(PROTECTED, method.getModifier());
     assertTrue(method.getMCReturnType().isPresentMCVoidType());
     assertTrue(method.isEmptyCDParameters());

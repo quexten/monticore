@@ -2,21 +2,33 @@
 
 package de.monticore.prettyprint;
 
-import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.javalight._ast.*;
-import de.monticore.javalight._visitor.JavaLightVisitor;
-import de.monticore.statements.prettyprint.MCCommonStatementsPrettyPrinter;
-import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
+import de.monticore.javalight._visitor.JavaLightHandler;
+import de.monticore.javalight._visitor.JavaLightTraverser;
+import de.monticore.javalight._visitor.JavaLightVisitor2;
+import de.monticore.statements.mccommonstatements._ast.ASTMCCommonStatementsNode;
 
 import java.util.Iterator;
 
-public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter implements
-        JavaLightVisitor {
+public class JavaLightPrettyPrinter implements
+    JavaLightVisitor2, JavaLightHandler {
 
-  private JavaLightVisitor realThis = this;
-
+  protected JavaLightTraverser traverser;
+  
+  protected IndentPrinter printer;
+  
   public JavaLightPrettyPrinter(IndentPrinter out) {
-    super(out);
+    this.printer = out;
+  }
+
+  @Override
+  public JavaLightTraverser getTraverser() {
+    return traverser;
+  }
+
+  @Override
+  public void setTraverser(JavaLightTraverser traverser) {
+    this.traverser = traverser;
   }
 
   public IndentPrinter getPrinter() {
@@ -28,36 +40,25 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   }
 
   @Override
-  public void handle(ASTClassBlock a) {
-    CommentPrettyPrinter.printPreComments(a, getPrinter());
-    if (a.isStatic()) {
-      getPrinter().print("static ");
-    }
-    a.getMCJavaBlock().accept(getRealThis());
-    CommentPrettyPrinter.printPostComments(a, getPrinter());
-  }
-
-
-  @Override
   public void handle(ASTMethodDeclaration a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    a.getMCModifiersList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getRealThis()); getPrinter().print(" ");});
+    a.getMCModifierList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getTraverser()); getPrinter().print(" ");});
     if (a.isPresentExtTypeParameters()) {
-      a.getExtTypeParameters().accept(getRealThis());
+      a.getExtTypeParameters().accept(getTraverser());
     }
-    a.getMCReturnType().accept(getRealThis());
+    a.getMCReturnType().accept(getTraverser());
     getPrinter().print(" ");
     printNode(a.getName());
-    a.getFormalParameters().accept(getRealThis());
+    a.getFormalParameters().accept(getTraverser());
     for (int i = 0; i < a.getDimList().size(); i++) {
       getPrinter().print("[]");
     }
     if (a.isPresentThrows()) {
       getPrinter().print(" throws ");
-      a.getThrows().accept(getRealThis());
+      a.getThrows().accept(getTraverser());
     }
     if (a.isPresentMCJavaBlock()) {
-      a.getMCJavaBlock().accept(getRealThis());
+      a.getMCJavaBlock().accept(getTraverser());
     } else {
       getPrinter().println(";");
     }
@@ -67,20 +68,20 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   @Override
   public void handle(ASTInterfaceMethodDeclaration a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    a.getMCModifiersList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getRealThis()); getPrinter().print(" ");});
+    a.getMCModifierList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getTraverser()); getPrinter().print(" ");});
     if (a.isPresentExtTypeParameters()) {
-      a.getExtTypeParameters().accept(getRealThis());
+      a.getExtTypeParameters().accept(getTraverser());
     }
-    a.getMCReturnType().accept(getRealThis());
+    a.getMCReturnType().accept(getTraverser());
     getPrinter().print(" ");
     printNode(a.getName());
-    a.getFormalParameters().accept(getRealThis());
+    a.getFormalParameters().accept(getTraverser());
     for (int i = 0; i < a.getDimList().size(); i++) {
       getPrinter().print("[]");
     }
     if (a.isPresentThrows()) {
       getPrinter().print(" throws ");
-      a.getThrows().accept(getRealThis());
+      a.getThrows().accept(getTraverser());
     }
     getPrinter().print(";");
     CommentPrettyPrinter.printPostComments(a, getPrinter());
@@ -89,11 +90,11 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
 
   @Override
   public void handle(ASTThrows a) {
-    for (int i = 0; i < a.getMCQualifiedNamesList().size(); i++) {
+    for (int i = 0; i < a.getMCQualifiedNameList().size(); i++) {
       if (i != 0) {
         getPrinter().print(", ");
       }
-      a.getMCQualifiedNames(i).accept(getRealThis());
+      a.getMCQualifiedName(i).accept(getTraverser());
     }
   }
 
@@ -102,25 +103,25 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   public void handle(ASTConstructorDeclaration a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
     getPrinter().println();
-    a.getMCModifiersList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getRealThis()); getPrinter().print(" ");});
+    a.getMCModifierList().stream().forEach(m -> {getPrinter().print(" "); m.accept(getTraverser()); getPrinter().print(" ");});
     if (a.isPresentExtTypeParameters()) {
-      a.getExtTypeParameters().accept(getRealThis());
+      a.getExtTypeParameters().accept(getTraverser());
     }
     printNode(a.getName());
-    a.getFormalParameters().accept(getRealThis());
+    a.getFormalParameters().accept(getTraverser());
 
     if (a.isPresentThrows()) {
       getPrinter().print(" throws ");
-      a.getThrows().accept(getRealThis());
+      a.getThrows().accept(getTraverser());
     }
-    a.getMCJavaBlock().accept(getRealThis());
+    a.getMCJavaBlock().accept(getTraverser());
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
   @Override
   public void handle(ASTConstDeclaration a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    a.getLocalVariableDeclaration().accept(getRealThis());
+    a.getLocalVariableDeclaration().accept(getTraverser());
     getPrinter().println(";");
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
@@ -130,7 +131,7 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
     CommentPrettyPrinter.printPreComments(a, getPrinter());
     getPrinter().print("(");
     if (a.isPresentFormalParameterListing()) {
-      a.getFormalParameterListing().accept(getRealThis());
+      a.getFormalParameterListing().accept(getTraverser());
     }
     getPrinter().print(")");
     CommentPrettyPrinter.printPostComments(a, getPrinter());
@@ -139,43 +140,33 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   @Override
   public void handle(ASTFormalParameterListing a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    printJavaLightList(a.getFormalParametersList().iterator(), ",");
-    if (!a.getFormalParametersList().isEmpty() && a.isPresentLastFormalParameter()) {
+    printSeparated(a.getFormalParameterList().iterator(), ",");
+    if (!a.getFormalParameterList().isEmpty() && a.isPresentLastFormalParameter()) {
       getPrinter().print(",");
     }
     if (a.isPresentLastFormalParameter()) {
-      a.getLastFormalParameter().accept(getRealThis());
+      a.getLastFormalParameter().accept(getTraverser());
     }
-    CommentPrettyPrinter.printPostComments(a, getPrinter());
-  }
-
-  @Override
-  public void handle(ASTFormalParameter a) {
-    CommentPrettyPrinter.printPreComments(a, getPrinter());
-    printSeparated(a.getJavaModifiersList().iterator(), " ");
-    a.getMCType().accept(getRealThis());
-    getPrinter().print(" ");
-    a.getDeclaratorId().accept(getRealThis());
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
   @Override
   public void handle(ASTLastFormalParameter a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    printSeparated(a.getJavaModifiersList().iterator(), " ");
-    a.getMCType().accept(getRealThis());
+    printSeparated(a.getJavaModifierList().iterator(), " ");
+    a.getMCType().accept(getTraverser());
     getPrinter().print(" ... ");
-    a.getDeclaratorId().accept(getRealThis());
+    a.getDeclaratorId().accept(getTraverser());
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
   @Override
   public void handle(ASTAnnotation a) {
     getPrinter().print("@");
-    a.getAnnotationName().accept(getRealThis());
+    a.getAnnotationName().accept(getTraverser());
     if (a.isPresentAnnotationArguments()) {
       getPrinter().print("(");
-      a.getAnnotationArguments().accept(getRealThis());
+      a.getAnnotationArguments().accept(getTraverser());
       getPrinter().print(")");
     }
   }
@@ -183,7 +174,7 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   @Override
   public void handle(ASTAnnotationPairArguments a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
-    printJavaLightList(a.getElementValuePairsList().iterator(), ", ");
+    printJavaLightList(a.getElementValuePairList().iterator(), ", ");
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
@@ -192,7 +183,7 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
     CommentPrettyPrinter.printPreComments(a, getPrinter());
     printNode(a.getName());
     getPrinter().print(" = ");
-    a.getElementValueOrExpr().accept(getRealThis());
+    a.getElementValueOrExpr().accept(getTraverser());
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
@@ -200,16 +191,15 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
   public void handle(ASTElementValueArrayInitializer a) {
     CommentPrettyPrinter.printPreComments(a, getPrinter());
     getPrinter().print("{");
-    for (int i = 0; i < a.getElementValueOrExprsList().size(); i++) {
+    for (int i = 0; i < a.getElementValueOrExprList().size(); i++) {
       if (i != 0) {
         getPrinter().print(", ");
       }
-      a.getElementValueOrExprs(i).accept(getRealThis());
+      a.getElementValueOrExpr(i).accept(getTraverser());
     }
     getPrinter().print("}");
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
-
 
   @Override
   public void handle(ASTArrayDimensionByInitializer a) {
@@ -218,16 +208,7 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
       getPrinter().print("[]");
     }
     getPrinter().print(" ");
-    a.getArrayInit().accept(getRealThis());
-    CommentPrettyPrinter.printPostComments(a, getPrinter());
-  }
-
-  @Override
-  public void handle(ASTEnhancedForControl a) {
-    CommentPrettyPrinter.printPreComments(a, getPrinter());
-    a.getFormalParameter().accept(getRealThis());
-    getPrinter().print(": ");
-    a.getExpression().accept(getRealThis());
+    a.getArrayInit().accept(getTraverser());
     CommentPrettyPrinter.printPostComments(a, getPrinter());
   }
 
@@ -236,33 +217,19 @@ public class JavaLightPrettyPrinter extends MCCommonStatementsPrettyPrinter impl
     String sep = "";
     while (iter.hasNext()) {
       getPrinter().print(sep);
-      iter.next().accept(getRealThis());
+      iter.next().accept(getTraverser());
       sep = separator;
     }
   }
 
-  /**
-   * This method prettyprints a given node from Java.
-   *
-   * @param a A node from Java.
-   * @return String representation.
-   */
-  public String prettyprint(ASTJavaLightNode a) {
-    getPrinter().clearBuffer();
-    a.accept(getRealThis());
-    return getPrinter().getContent();
+  protected void printSeparated(Iterator<? extends ASTMCCommonStatementsNode> iter, String separator) {
+    // print by iterate through all items
+    String sep = "";
+    while (iter.hasNext()) {
+      getPrinter().print(sep);
+      iter.next().accept(getTraverser());
+      sep = separator;
+    }
   }
-
-
-  @Override
-  public void setRealThis(JavaLightVisitor realThis) {
-    this.realThis = realThis;
-  }
-
-  @Override
-  public JavaLightVisitor getRealThis() {
-    return realThis;
-  }
-
-
+  
 }

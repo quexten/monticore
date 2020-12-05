@@ -5,7 +5,7 @@ import de.monticore.cd.CD4AnalysisHelper;
 import de.monticore.cd.cd4analysis._ast.*;
 import de.monticore.cd.cd4analysis._symboltable.CDDefinitionSymbol;
 import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbol;
-import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbolLoader;
+import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbolSurrogate;
 import de.monticore.codegen.cd2java.AbstractService;
 import de.monticore.codegen.mc2cd.MC2CDStereotypes;
 import de.monticore.types.mcbasictypes._ast.ASTMCPrimitiveType;
@@ -20,7 +20,6 @@ import static de.monticore.codegen.cd2java._ast.ast_class.ASTConstants.*;
 import static de.monticore.codegen.cd2java._ast.builder.BuilderConstants.BUILDER_SUFFIX;
 import static de.monticore.codegen.cd2java._symboltable.SymbolTableConstants.*;
 import static de.monticore.utils.Names.getSimpleName;
-import static de.se_rwth.commons.Names.getQualifier;
 
 public class SymbolTableService extends AbstractService<SymbolTableService> {
 
@@ -133,6 +132,34 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
   }
 
   /**
+   * artifact scope interface names e.g. IAutomataArtifactScope
+   */
+
+  public String getArtifactScopeInterfaceSimpleName(CDDefinitionSymbol cdSymbol) {
+    return INTERFACE_PREFIX + cdSymbol.getName() + ARTIFACT_PREFIX + SCOPE_SUFFIX;
+  }
+
+  public String getArtifactScopeInterfaceSimpleName() {
+    return getArtifactScopeInterfaceSimpleName(getCDSymbol());
+  }
+
+  public String getArtifactScopeInterfaceFullName(CDDefinitionSymbol cdSymbol) {
+    return getPackage(cdSymbol) + "." + getArtifactScopeInterfaceSimpleName(cdSymbol);
+  }
+
+  public String getArtifactScopeInterfaceFullName() {
+    return getArtifactScopeInterfaceFullName(getCDSymbol());
+  }
+
+  public ASTMCQualifiedType getArtifactScopeInterfaceType(CDDefinitionSymbol cdSymbol) {
+    return getMCTypeFacade().createQualifiedType(getArtifactScopeInterfaceFullName(cdSymbol));
+  }
+
+  public ASTMCQualifiedType getArtifactScopeInterfaceType() {
+    return getArtifactScopeInterfaceType(getCDSymbol());
+  }
+
+  /**
    * global scope class names e.g. AutomataGlobalScope
    */
 
@@ -182,26 +209,6 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
   }
 
   /**
-   * model loader class names e.g. AutomataModelLoader
-   */
-
-  public String getModelLoaderClassFullName(CDDefinitionSymbol cdSymbol) {
-    return getPackage(cdSymbol) + "." + getModelLoaderClassSimpleName(cdSymbol);
-  }
-
-  public String getModelLoaderClassFullName() {
-    return getModelLoaderClassFullName(getCDSymbol());
-  }
-
-  public String getModelLoaderClassSimpleName(CDDefinitionSymbol cdSymbol) {
-    return cdSymbol.getName() + MODEL_LOADER_SUFFIX;
-  }
-
-  public String getModelLoaderClassSimpleName() {
-    return getModelLoaderClassSimpleName(getCDSymbol());
-  }
-
-  /**
    * symbol reference class names e.g. AutomatonSymbolReference
    */
 
@@ -233,19 +240,19 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
   }
 
   /**
-   * resolving delegate symbol interface e.g. IAutomatonSymbolResolvingDelegate
+   * resolving delegate symbol interface e.g. IAutomatonSymbolResolver
    */
 
-  public String getSymbolResolvingDelegateInterfaceSimpleName(ASTCDType astcdType) {
-    return INTERFACE_PREFIX + getSymbolSimpleName(astcdType) + RESOLVING_DELEGATE_SUFFIX;
+  public String getSymbolResolverInterfaceSimpleName(ASTCDType astcdType) {
+    return INTERFACE_PREFIX + getSymbolSimpleName(astcdType) + RESOLVER_SUFFIX;
   }
 
-  public String getSymbolResolvingDelegateInterfaceFullName(ASTCDType astcdType) {
-    return getSymbolResolvingDelegateInterfaceFullName(astcdType, getCDSymbol());
+  public String getSymbolResolverInterfaceFullName(ASTCDType astcdType) {
+    return getSymbolResolverInterfaceFullName(astcdType, getCDSymbol());
   }
 
-  public String getSymbolResolvingDelegateInterfaceFullName(ASTCDType astcdType, CDDefinitionSymbol cdDefinitionSymbol) {
-    return getPackage(cdDefinitionSymbol) + "." + getSymbolResolvingDelegateInterfaceSimpleName(astcdType);
+  public String getSymbolResolverInterfaceFullName(ASTCDType astcdType, CDDefinitionSymbol cdDefinitionSymbol) {
+    return getPackage(cdDefinitionSymbol) + "." + getSymbolResolverInterfaceSimpleName(astcdType);
   }
 
   /**
@@ -306,6 +313,66 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
 
   public String getSymbolTableCreatorDelegatorFullName() {
     return getSymbolTableCreatorDelegatorFullName(getCDSymbol());
+  }
+
+  /**
+   * PhasedSymbolTableCreatorDelegator Names, e.g. AutomatonPhasedSymbolTableCreatorDelegator
+   */
+
+  public String getPhasedSymbolTableCreatorDelegatorSimpleName(CDDefinitionSymbol cdSymbol) {
+    return cdSymbol.getName() + PHASED_SUFFIX + SYMBOL_TABLE_CREATOR_SUFFIX + DELEGATOR_SUFFIX;
+  }
+
+  public String getPhasedSymbolTableCreatorDelegatorSimpleName() {
+    return getPhasedSymbolTableCreatorDelegatorSimpleName(getCDSymbol());
+  }
+
+  public String getPhasedSymbolTableCreatorDelegatorFullName(CDDefinitionSymbol cdSymbol) {
+    return getPackage(cdSymbol) + "." + getPhasedSymbolTableCreatorDelegatorSimpleName(cdSymbol);
+  }
+
+  public String getPhasedSymbolTableCreatorDelegatorFullName() {
+    return getPhasedSymbolTableCreatorDelegatorFullName(getCDSymbol());
+  }
+
+  /**
+   * ScopeSkeletonCreatorDelegator Names e.g. AutomatonScopeSkeletonCreatorDelegator
+   */
+
+  public String getScopesGenitorDelegatorSimpleName(CDDefinitionSymbol cdSymbol) {
+    return cdSymbol.getName() + SCOPES_GENITOR_SUFFIX + DELEGATOR_SUFFIX;
+  }
+
+  public String getScopesGenitorDelegatorSimpleName() {
+    return getScopesGenitorDelegatorSimpleName(getCDSymbol());
+  }
+
+  public String getScopesGenitorDelegatorFullName(CDDefinitionSymbol cdSymbol) {
+    return getPackage(cdSymbol) + "." + getScopesGenitorDelegatorSimpleName(cdSymbol);
+  }
+
+  public String getScopesGenitorDelegatorFullName() {
+    return getScopesGenitorDelegatorFullName(getCDSymbol());
+  }
+
+  /**
+   * ScopeSkeletonCreator Names e.g. AutomatonScopeSkeletonCreator
+   */
+
+  public String getScopesGenitorSimpleName(CDDefinitionSymbol cdSymbol) {
+    return cdSymbol.getName() + SCOPES_GENITOR_SUFFIX;
+  }
+
+  public String getScopesGenitorSimpleName() {
+    return getScopesGenitorSimpleName(getCDSymbol());
+  }
+
+  public String getScopesGenitorFullName(CDDefinitionSymbol cdSymbol) {
+    return getPackage(cdSymbol) + "." + getScopesGenitorSimpleName(cdSymbol);
+  }
+
+  public String getScopesGenitorFullName() {
+    return getScopesGenitorFullName(getCDSymbol());
   }
 
   /**
@@ -389,20 +456,20 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
    * symTabMill interface names e.g. AutomataSymTabMill
    */
 
-  public String getSymbolTablePrinterSimpleName(CDDefinitionSymbol cdSymbol) {
-    return cdSymbol.getName() + SYMBOL_TABLE_PRINTER_SUFFIX;
+  public String getSymbols2JsonSimpleName(CDDefinitionSymbol cdSymbol) {
+    return cdSymbol.getName() + SYMBOLS_2_JSON_SUFFIX;
   }
 
-  public String getSymbolTablePrinterSimpleName() {
-    return getSymbolTablePrinterSimpleName(getCDSymbol());
+  public String getSymbols2JsonSimpleName() {
+    return getSymbols2JsonSimpleName(getCDSymbol());
   }
 
-  public String getSymbolTablePrinterFullName(CDDefinitionSymbol cdSymbol) {
-    return getSerializationPackage(cdSymbol) + "." + getSymbolTablePrinterSimpleName(cdSymbol);
+  public String getSymbols2JsonFullName(CDDefinitionSymbol cdSymbol) {
+    return getSerializationPackage(cdSymbol) + "." + getSymbols2JsonSimpleName(cdSymbol);
   }
 
-  public String getSymbolTablePrinterFullName() {
-    return getSymbolTablePrinterFullName(getCDSymbol());
+  public String getSymbols2JsonFullName() {
+    return getSymbols2JsonFullName(getCDSymbol());
   }
 
   public ASTMCQualifiedType getJsonPrinterType(){
@@ -564,12 +631,10 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
     if (!type.isPresentSymbol()) {
       return Optional.empty();
     }
-    for (CDTypeSymbolLoader superType : type.getSymbol().getCdInterfaceList()) {
-      if (superType.isSymbolLoaded() && superType.getLoadedSymbol().isPresentAstNode()) {
-        Optional<ASTCDType> result = getTypeWithSymbolInfo(superType.getLoadedSymbol().getAstNode());
-        if (result.isPresent()) {
-          return result;
-        }
+    for (CDTypeSymbolSurrogate superType : type.getSymbol().getCdInterfacesList()) {
+      Optional<ASTCDType> result = getTypeWithSymbolInfo(superType.lazyLoadDelegate().getAstNode());
+      if (result.isPresent()) {
+        return result;
       }
     }
     return Optional.empty();
@@ -582,12 +647,10 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
     if (!type.isPresentSymbol()) {
       return Optional.empty();
     }
-    for (CDTypeSymbolLoader superType : type.getSymbol().getCdInterfaceList()) {
-      if (superType.isSymbolLoaded() && superType.getLoadedSymbol().isPresentAstNode()) {
-        Optional<ASTCDType> result = getTypeWithScopeInfo(superType.getLoadedSymbol().getAstNode());
-        if (result.isPresent()) {
-          return result;
-        }
+    for (CDTypeSymbolSurrogate superType : type.getSymbol().getCdInterfacesList()) {
+      Optional<ASTCDType> result = getTypeWithScopeInfo(superType.getAstNode());
+      if (result.isPresent()) {
+        return result;
       }
     }
     return Optional.empty();
@@ -606,6 +669,19 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
   public List<ASTCDType> getSymbolDefiningSuperProds() {
     List<ASTCDType> symbolProds = new ArrayList<>();
     for (CDDefinitionSymbol cdDefinitionSymbol : getSuperCDsTransitive()) {
+      for (CDTypeSymbol type : cdDefinitionSymbol.getTypes()) {
+        if (type.isPresentAstNode() && type.getAstNode().isPresentModifier()
+            && hasSymbolStereotype(type.getAstNode().getModifier())) {
+          symbolProds.add(type.getAstNode());
+        }
+      }
+    }
+    return symbolProds;
+  }
+
+  public List<ASTCDType> getSymbolDefiningSuperProds(CDDefinitionSymbol symbol) {
+    List<ASTCDType> symbolProds = new ArrayList<>();
+    for (CDDefinitionSymbol cdDefinitionSymbol : getSuperCDsTransitive(symbol)) {
       for (CDTypeSymbol type : cdDefinitionSymbol.getTypes()) {
         if (type.isPresentAstNode() && type.getAstNode().isPresentModifier()
             && hasSymbolStereotype(type.getAstNode().getModifier())) {
@@ -744,66 +820,6 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
     }
   }
 
-  public Optional<String> getStartProd() {
-    if(this.getCDSymbol().isPresentAstNode()){
-      return getStartProd(this.getCDSymbol().getAstNode());
-    }
-    else return Optional.empty();
-  }
-
-  public Optional<String> getStartProd(ASTCDDefinition astcdDefinition) {
-    if (astcdDefinition.isPresentModifier() && hasStartProdStereotype(astcdDefinition.getModifier())) {
-      return getStartProdValue(astcdDefinition.getModifier());
-    }
-    for (ASTCDClass prod : astcdDefinition.getCDClassList()) {
-      if (hasStereotype(prod.getModifier(), MC2CDStereotypes.START_PROD)) {
-        return Optional.of(getCDSymbol().getPackageName() + "." + getCDName() + "." + prod.getName());
-      }
-    }
-    for (ASTCDInterface prod : astcdDefinition.getCDInterfaceList()) {
-      if (hasStereotype(prod.getModifier(), MC2CDStereotypes.START_PROD)) {
-        return Optional.of(getCDSymbol().getPackageName() + "." + getCDName() + "." + prod.getName());
-      }
-    }
-    return Optional.empty();
-  }
-
-  public Optional<String> getStartProdASTFullName(ASTCDDefinition astcdDefinition) {
-    Optional<String> startProd = getStartProd(astcdDefinition);
-    if (startProd.isPresent()) {
-      String simpleName = Names.getSimpleName(startProd.get());
-      simpleName = simpleName.startsWith(AST_PREFIX) ? simpleName : AST_PREFIX + simpleName;
-      String startProdAstName = getQualifier(startProd.get()).toLowerCase() + "." + AST_PACKAGE + "." + simpleName;
-      return Optional.of(startProdAstName);
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * methods which determine if a special stereotype is present
-   */
-
-  public boolean hasStartProd() {
-    return getStartProd().isPresent();
-  }
-
-  public boolean hasStartProd(ASTCDDefinition astcdDefinition) {
-    if (astcdDefinition.isPresentModifier() && hasStartProdStereotype(astcdDefinition.getModifier())) {
-      return true;
-    }
-    for (ASTCDClass prod : astcdDefinition.getCDClassList()) {
-      if (hasStereotype(prod.getModifier(), MC2CDStereotypes.START_PROD)) {
-        return true;
-      }
-    }
-    for (ASTCDInterface prod : astcdDefinition.getCDInterfaceList()) {
-      if (hasStereotype(prod.getModifier(), MC2CDStereotypes.START_PROD)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   public boolean hasComponentStereotype(ASTCDDefinition astcdDefinition) {
     return astcdDefinition.isPresentModifier() &&
         hasComponentStereotype(astcdDefinition.getModifier());
@@ -821,10 +837,6 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
     return hasStereotype(modifier, MC2CDStereotypes.COMPONENT);
   }
 
-  public boolean hasStartProdStereotype(ASTModifier modifier) {
-    return hasStereotype(modifier, MC2CDStereotypes.START_PROD);
-  }
-
   public boolean hasShadowingStereotype(ASTModifier modifier) {
     return hasStereotype(modifier, MC2CDStereotypes.SHADOWING);
   }
@@ -835,14 +847,6 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
 
   public boolean hasOrderedStereotype(ASTModifier modifier) {
     return hasStereotype(modifier, MC2CDStereotypes.ORDERED);
-  }
-
-  public Optional<String> getStartProdValue(ASTModifier modifier) {
-    List<String> stereotypeValues = getStereotypeValues(modifier, MC2CDStereotypes.START_PROD);
-    if (!stereotypeValues.isEmpty()) {
-      return Optional.ofNullable(stereotypeValues.get(0));
-    }
-    return Optional.empty();
   }
 
   public String determineReturnType(ASTMCType type) {
@@ -857,4 +861,5 @@ public class SymbolTableService extends AbstractService<SymbolTableService> {
       return "null";
     }
   }
+
 }

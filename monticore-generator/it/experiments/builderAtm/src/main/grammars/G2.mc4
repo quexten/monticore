@@ -1,4 +1,0 @@
-/* (c) https://github.com/MontiCore/monticore */
-grammar G2 extends G1 {
-  S = "...S2" a:T b:T? c:T*;
-}

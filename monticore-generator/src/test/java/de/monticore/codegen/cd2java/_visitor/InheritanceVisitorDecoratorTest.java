@@ -88,7 +88,7 @@ public class InheritanceVisitorDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testInterfaceCount() {
-    assertEquals(2, visitorInterface.sizeInterfaces());
+    assertEquals(2, visitorInterface.sizeInterface());
   }
 
   @Test

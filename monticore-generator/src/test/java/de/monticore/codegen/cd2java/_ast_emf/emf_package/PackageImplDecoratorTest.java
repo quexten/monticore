@@ -54,7 +54,7 @@ public class PackageImplDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterface() {
-    assertEquals(1, packageClass.sizeInterfaces());
+    assertEquals(1, packageClass.sizeInterface());
     assertDeepEquals("AutomataPackage", packageClass.getInterface(0));
   }
 

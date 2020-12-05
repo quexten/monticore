@@ -108,7 +108,7 @@ public class InheritedAttributesTranslationTest {
 
   private boolean hasInheritedStereotype(ASTCDAttribute astcdAttribute) {
     if (astcdAttribute.isPresentModifier() && astcdAttribute.getModifier().isPresentStereotype() &&
-        !astcdAttribute.getModifier().getStereotype().isEmptyValues()) {
+        !astcdAttribute.getModifier().getStereotype().isEmptyValue()) {
       return astcdAttribute.getModifier().getStereotype().getValueList()
           .stream()
           .anyMatch(value -> value.getName().equals(MC2CDStereotypes.INHERITED.toString()));

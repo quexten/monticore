@@ -87,7 +87,7 @@ public class ASTDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testBaseInterface() {
-    assertEquals(1, astClass.sizeInterfaces());
+    assertEquals(1, astClass.sizeInterface());
     assertEquals("de.monticore.codegen.ast.ast._ast.ASTASTNode", astClass.printInterfaces());
   }
 
@@ -104,7 +104,7 @@ public class ASTDecoratorTest extends DecoratorTestCase {
   @Test
   public void testMethods() {
     assertFalse(astClass.getCDMethodList().isEmpty());
-    assertEquals(14, astClass.getCDMethodList().size());
+    assertEquals(16, astClass.getCDMethodList().size());
   }
 
   /**

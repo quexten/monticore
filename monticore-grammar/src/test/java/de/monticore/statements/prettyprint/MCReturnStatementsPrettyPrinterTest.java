@@ -2,9 +2,7 @@
 package de.monticore.statements.prettyprint;
 
 import de.monticore.prettyprint.IndentPrinter;
-import de.monticore.statements.mclowlevelstatements._ast.ASTBreakStatement;
 import de.monticore.statements.mcreturnstatements._ast.ASTReturnStatement;
-import de.monticore.statements.testmclowlevelstatements._parser.TestMCLowLevelStatementsParser;
 import de.monticore.statements.testmcreturnstatements._parser.TestMCReturnStatementsParser;
 import de.se_rwth.commons.logging.Log;
 import de.se_rwth.commons.logging.LogStub;
@@ -22,7 +20,7 @@ public class MCReturnStatementsPrettyPrinterTest  {
 
   private TestMCReturnStatementsParser parser = new TestMCReturnStatementsParser();
 
-  private MCReturnStatementsPrettyPrinter prettyPrinter = new MCReturnStatementsPrettyPrinter(new IndentPrinter());
+  private MCReturnStatementsFullPrettyPrinter prettyPrinter = new MCReturnStatementsFullPrettyPrinter(new IndentPrinter());
 
   @BeforeClass
   public static void setUp() {

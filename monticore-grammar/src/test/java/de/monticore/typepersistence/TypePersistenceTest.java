@@ -5,6 +5,7 @@ import de.monticore.io.paths.ModelPath;
 import de.monticore.typepersistence.variable.VariableMill;
 import de.monticore.typepersistence.variable._ast.ASTVar;
 import de.monticore.typepersistence.variable._parser.VariableParser;
+import de.monticore.typepersistence.variable._symboltable.IVariableGlobalScope;
 import de.monticore.typepersistence.variable._symboltable.IVariableScope;
 import de.monticore.typepersistence.variable._symboltable.VariableGlobalScope;
 import de.monticore.typepersistence.variable._symboltable.VariableSymbolTableCreator;
@@ -31,19 +32,17 @@ public class TypePersistenceTest {
     */
 
     //Create global scope for our language combination
-    VariableGlobalScope globalScope = VariableMill
-        .variableGlobalScopeBuilder()
-        .setModelPath(new ModelPath())
-        .setModelFileExtension("tp")
-        .build();
+    IVariableGlobalScope globalScope = VariableMill
+        .globalScope();
+    globalScope.setModelPath(new ModelPath());
+    globalScope.setFileExt("tp");
 
     //Parse blah model
     VariableParser blahParser = new VariableParser();
     Optional<ASTVar> varModel = blahParser.parse_String("var String a");
-    VariableSymbolTableCreator varSymbolTableCreator = VariableMill.variableSymbolTableCreatorBuilder().addToScopeStack(globalScope).build();
+    VariableSymbolTableCreator varSymbolTableCreator = VariableMill.variableSymbolTableCreator();
     IVariableScope blahSymbolTable = varSymbolTableCreator.createFromAST(varModel.get());
 ASTMCType a;
     assertTrue(varModel.isPresent());
-    System.out.println(varModel);
   }
 }

@@ -5,7 +5,7 @@ ${tc.include("core.Package")}
 ${tc.include("core.Imports")}
 
 ${packageInterface.printModifier()} interface ${packageInterface.getName()} <#rt><#lt>
-<#if !packageInterface.isEmptyInterfaces()>extends ${packageInterface.printInterfaces()} </#if>{
+<#if !packageInterface.isEmptyInterface()>extends ${packageInterface.printInterfaces()} </#if>{
 
 
 <#list packageInterface.getCDAttributeList() as attribute>

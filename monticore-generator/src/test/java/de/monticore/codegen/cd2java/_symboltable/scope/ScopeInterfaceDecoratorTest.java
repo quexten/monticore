@@ -88,7 +88,7 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterfacesCount() {
-    assertEquals(2, scopeInterface.sizeInterfaces());
+    assertEquals(2, scopeInterface.sizeInterface());
   }
 
   @Test
@@ -104,7 +104,7 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testMethodCount() {
-    assertEquals(137, scopeInterface.getCDMethodList().size());
+    assertEquals(167, scopeInterface.getCDMethodList().size());
   }
 
   @Test
@@ -538,7 +538,7 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
   public void testAddMethod() {
     List<ASTCDMethod> method = getMethodsBy("add", 1, scopeInterface);
 
-    assertEquals(3, method.size());
+    assertEquals(4, method.size());
 
     ASTCDMethod automatonMethod = method.get(0);
     assertDeepEquals(PUBLIC_ABSTRACT, automatonMethod.getModifier());
@@ -552,7 +552,7 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
   public void testRemoveMethod() {
     List<ASTCDMethod> method = getMethodsBy("remove", 1, scopeInterface);
 
-    assertEquals(3, method.size());
+    assertEquals(4, method.size());
 
     ASTCDMethod automatonMethod = method.get(0);
     assertDeepEquals(PUBLIC_ABSTRACT, automatonMethod.getModifier());
@@ -616,7 +616,7 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testAcceptMethod() {
-    ASTCDMethod method = getMethodBy("accept", scopeInterface);
+    ASTCDMethod method = getMethodsBy("accept", scopeInterface.getCDMethodList()).get(0);
 
     assertDeepEquals(PUBLIC_ABSTRACT, method.getModifier());
     assertTrue(method.getMCReturnType().isPresentMCVoidType());
@@ -675,6 +675,17 @@ public class ScopeInterfaceDecoratorTest extends DecoratorTestCase {
     assertTrue(method.getModifier().isPublic());
     assertTrue(method.getModifier().isAbstract());
     assertDeepEquals(String.class, method.getMCReturnType().getMCType());
+
+    assertTrue(method.isEmptyCDParameters());
+  }
+
+
+  @Test
+  public void testGetSymbolsSizeMethod() {
+    ASTCDMethod method = getMethodBy("getSymbolsSize", scopeInterface);
+
+    assertDeepEquals(PUBLIC, method.getModifier());
+    assertInt(method.getMCReturnType().getMCType());
 
     assertTrue(method.isEmptyCDParameters());
   }

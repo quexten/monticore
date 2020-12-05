@@ -2,7 +2,6 @@
 package de.monticore.types.prettyprint;
 
 import de.monticore.prettyprint.IndentPrinter;
-import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mcfullgenerictypes._ast.ASTMCMultipleGenericType;
 import de.monticore.types.mcfullgenerictypes._ast.ASTMCWildcardTypeArgument;
 import de.monticore.types.mcfullgenerictypestest._parser.MCFullGenericTypesTestParser;
@@ -38,7 +37,7 @@ public class MCFullGenericTypesPrettyPrinterTest {
     assertTrue(ast.isPresent());
     assertFalse(parser.hasErrors());
     ASTMCWildcardTypeArgument wildcardType = ast.get();
-    MCFullGenericTypesPrettyPrinter printer = new MCFullGenericTypesPrettyPrinter(new IndentPrinter());
+    MCFullGenericTypesFullPrettyPrinter printer = new MCFullGenericTypesFullPrettyPrinter(new IndentPrinter());
     String output = printer.prettyprint(ast.get());
     ast = parser.parse_StringMCWildcardTypeArgument(output);
     assertFalse(parser.hasErrors());
@@ -53,7 +52,7 @@ public class MCFullGenericTypesPrettyPrinterTest {
     assertTrue(ast.isPresent());
     assertFalse(parser.hasErrors());
     ASTMCWildcardTypeArgument wildcardType = ast.get();
-    MCFullGenericTypesPrettyPrinter printer = new MCFullGenericTypesPrettyPrinter(new IndentPrinter());
+    MCFullGenericTypesFullPrettyPrinter printer = new MCFullGenericTypesFullPrettyPrinter(new IndentPrinter());
     String output = printer.prettyprint(ast.get());
     ast = parser.parse_StringMCWildcardTypeArgument(output);
     assertFalse(parser.hasErrors());
@@ -68,7 +67,7 @@ public class MCFullGenericTypesPrettyPrinterTest {
     assertTrue(ast.isPresent());
     assertFalse(parser.hasErrors());
     ASTMCMultipleGenericType complexReferenceType = ast.get();
-    MCFullGenericTypesPrettyPrinter printer = new MCFullGenericTypesPrettyPrinter(new IndentPrinter());
+    MCFullGenericTypesFullPrettyPrinter printer = new MCFullGenericTypesFullPrettyPrinter(new IndentPrinter());
     String output = printer.prettyprint(ast.get());
     ast = parser.parse_StringMCMultipleGenericType(output);
     assertFalse(parser.hasErrors());
@@ -76,19 +75,4 @@ public class MCFullGenericTypesPrettyPrinterTest {
     assertTrue(complexReferenceType.deepEquals(ast.get()));
   }
 
-  @Test
-  public void testMCArrayType() throws IOException {
-    //have to use ASTMCType because of left recursion in ASTMCArrayType there is no parse Method
-    MCFullGenericTypesTestParser parser = new MCFullGenericTypesTestParser();
-    Optional<ASTMCType> ast = parser.parse_StringMCType("String[][]");
-    assertTrue(ast.isPresent());
-    assertFalse(parser.hasErrors());
-    ASTMCType type = ast.get();
-    MCFullGenericTypesPrettyPrinter printer = new MCFullGenericTypesPrettyPrinter(new IndentPrinter());
-    String output = printer.prettyprint(ast.get());
-    ast = parser.parse_StringMCType(output);
-    assertFalse(parser.hasErrors());
-    assertTrue(ast.isPresent());
-    assertTrue(type.deepEquals(ast.get()));
-  }
 }

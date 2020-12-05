@@ -14,7 +14,9 @@ public interface IGlobalScope {
 
   /**
    * Method returning the model path of this global scope
+   *
    * @return
    */
-   public ModelPath getModelPath () ;
+  ModelPath getModelPath();
+
 }

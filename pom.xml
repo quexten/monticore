@@ -7,7 +7,7 @@
 
   <groupId>de.monticore</groupId>
   <artifactId>monticore</artifactId>
-  <version>6.2.0</version>
+  <version>6.6.0</version>
   <packaging>pom</packaging>
 
   <!-- == PROJECT MODULES ================================================= -->
@@ -18,9 +18,8 @@
     <module>monticore-generator</module>
     <module>monticore-maven</module>
     <module>monticore-runtime</module>
-    <module>monticore-emf-runtime</module>
-    <module>monticore-templateclassgenerator</module>
-    <module>monticore-emf-grammar</module>
+    <module>monticore-runtime-emf</module>
+    <module>monticore-grammar-emf</module>
   </modules>
 
   <!-- == PROJECT PROPERTIES ============================================== -->
@@ -30,10 +29,10 @@
 
     <!-- .. Libraries ..................................................... -->
 
-    <cd4analysis.version>1.7.0</cd4analysis.version>
-    <last.mc.release>6.1.0</last.mc.release>
+    <cd4analysis.version>1.7.0.4</cd4analysis.version>
+    <last.mc.release>6.5.0</last.mc.release>
 
-    <se-commons.version>1.7.9</se-commons.version>
+    <se-commons.version>1.7.11</se-commons.version>
     <antlr.version>4.7.1</antlr.version>
     <commons.io.version>2.4</commons.io.version>
     <doxia-sink-api.version>1.6</doxia-sink-api.version>
@@ -46,7 +45,7 @@
     <jgrapht.version>0.9.1</jgrapht.version>
     <jline.version>2.12</jline.version>
     <jsr305.version>3.0.0</jsr305.version>
-    <junit.version>4.12</junit.version>
+    <junit.version>4.13.1</junit.version>
     <logback.version>1.1.2</logback.version>
     <maven-artifact.version>3.2.3</maven-artifact.version>
     <maven-core.version>3.2.3</maven-core.version>
@@ -85,7 +84,6 @@
     <site.plugin>3.4</site.plugin>
     <source.plugin>2.4</source.plugin>
     <surefire.plugin>2.22.2</surefire.plugin>
-    <tycho.plugin>0.22.0</tycho.plugin>
     <wagon.plugin>1.0</wagon.plugin>
 
     <!-- .. Reporting ..................................................... -->
@@ -111,10 +109,6 @@
     <archetype.test.skip>true</archetype.test.skip>
     <invoker.skip>true</invoker.skip>
 
-    <!-- .. Bootstrap Configuration ....................................... -->
-
-    <bootstrap.parent>XXX</bootstrap.parent>
-    <bootstrap.version>4.1.5-BOOTSTRAP</bootstrap.version>
   </properties>
 
   <!-- == PROJECT METAINFORMATION ========================================= -->
@@ -344,7 +338,7 @@
 
       <dependency>
         <groupId>de.monticore</groupId>
-        <artifactId>monticore-emf-runtime</artifactId>
+        <artifactId>monticore-runtime-emf</artifactId>
         <version>${last.mc.release}</version>
       </dependency>
 
@@ -352,6 +346,13 @@
         <groupId>de.monticore.lang</groupId>
         <artifactId>cd4analysis</artifactId>
         <version>${cd4analysis.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>de.monticore.lang</groupId>
+        <artifactId>cd4analysis</artifactId>
+        <version>${cd4analysis.version}</version>
+        <classifier>${grammars.classifier}</classifier>
       </dependency>
 
       <!-- .. Test Libraries ............................................... -->
@@ -726,54 +727,6 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <groupId>org.eclipse.tycho</groupId>
-          <artifactId>tycho-maven-plugin</artifactId>
-          <version>${tycho.plugin}</version>
-          <extensions>true</extensions>
-        </plugin>
-
-        <plugin>
-          <groupId>org.eclipse.tycho</groupId>
-          <artifactId>target-platform-configuration</artifactId>
-          <version>${tycho.plugin}</version>
-          <configuration>
-            <target>
-              <artifact>
-                <groupId>de.se_rwth.eclipse</groupId>
-                <artifactId>de.se_rwth.eclipse.targetplatform.mars</artifactId>
-                <version>1.0.3-SNAPSHOT</version>
-              </artifact>
-            </target>
-            <pomDependencies>consider</pomDependencies>
-            <environments>
-              <environment>
-                <os>linux</os>
-                <ws>gtk</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>linux</os>
-                <ws>gtk</ws>
-                <arch>x86_64</arch>
-              </environment>
-              <environment>
-                <os>win32</os>
-                <ws>win32</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>win32</os>
-                <ws>win32</ws>
-                <arch>x86_64</arch>
-              </environment>
-              <environment>
-                <os>macosx</os>
-                <ws>cocoa</ws>
-                <arch>x86_64</arch>
-              </environment>
-            </environments>
-          </configuration>        </plugin>
 
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

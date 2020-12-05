@@ -74,7 +74,7 @@ public class ASTEmfDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterface() {
-    assertEquals(1, emfClass.sizeInterfaces());
+    assertEquals(1, emfClass.sizeInterface());
     assertDeepEquals("de.monticore.codegen._ast_emf.automata._ast.ASTAutomataNode", emfClass.getInterface(0));
   }
 
@@ -101,7 +101,7 @@ public class ASTEmfDecoratorTest extends DecoratorTestCase {
   @Test
   public void testMethodSize() {
     assertFalse(emfClass.getCDMethodList().isEmpty());
-    assertEquals(21, emfClass.getCDMethodList().size());
+    assertEquals(23, emfClass.getCDMethodList().size());
   }
 
   @Test

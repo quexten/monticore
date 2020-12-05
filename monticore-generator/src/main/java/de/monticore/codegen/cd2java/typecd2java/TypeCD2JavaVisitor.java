@@ -6,6 +6,7 @@ import de.monticore.cd.cd4analysis._symboltable.CDTypeSymbol;
 import de.monticore.cd.cd4analysis._symboltable.ICD4AnalysisScope;
 import de.monticore.cd.cd4analysis._visitor.CD4AnalysisVisitor;
 import de.monticore.codegen.cd2java._ast.ast_class.ASTConstants;
+import de.monticore.grammar.grammar_withconcepts._visitor.Grammar_WithConceptsVisitor;
 import de.monticore.symboltable.IScope;
 import de.monticore.symboltable.ISymbol;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
@@ -16,7 +17,7 @@ import java.util.Optional;
 
 import static de.monticore.codegen.mc2cd.TransformationHelper.simpleName;
 
-public class TypeCD2JavaVisitor implements CD4AnalysisVisitor {
+public class TypeCD2JavaVisitor implements Grammar_WithConceptsVisitor {
 
   private static final String PACKAGE_SEPARATOR = "\\.";
 
@@ -42,10 +43,10 @@ public class TypeCD2JavaVisitor implements CD4AnalysisVisitor {
       l.remove(node.getNameList().size()-1);
       l.add( ASTConstants.AST_PACKAGE);
       l.add(simpleName(node));
-      node.getMCQualifiedName().setPartList(l);
+      node.getMCQualifiedName().setPartsList(l);
     }
     if(node.getNameList().size() <= 1){
-      node.getMCQualifiedName().setPartList(new ArrayList<>(Arrays.asList(node.getNameList().get(0).split(PACKAGE_SEPARATOR))));
+      node.getMCQualifiedName().setPartsList(new ArrayList<>(Arrays.asList(node.getNameList().get(0).split(PACKAGE_SEPARATOR))));
     }
   }
 

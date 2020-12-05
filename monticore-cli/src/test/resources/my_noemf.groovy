@@ -52,10 +52,10 @@ while (grammarIterator.hasNext()) {
       runGrammarCoCos(astGrammar, mcScope)
 
       // M5: transform grammar AST into Class Diagram AST
-      astClassDiagramWithST = deriveCD(astGrammar, glex, cdScope)
+      astClassDiagramWithST = deriveASTCD(astGrammar, glex, cdScope)
 
       // M6: generate parser and wrapper
-      generateParser(glex, astGrammar, mcScope, handcodedPath, out)
+      generateParser(glex, astClassDiagramWithST, astGrammar, mcScope, handcodedPath, out)
     }
   }
 }
@@ -71,7 +71,7 @@ for (astGrammar in getParsedGrammars()) {
   Reporting.on(Names.getQualifiedName(astGrammar.getPackageList(), astGrammar.getName()))
 
   astClassDiagram = getCDOfParsedGrammar(astGrammar)
-  reportCD(astClassDiagram, "", report)
+  reportCD(astClassDiagram, report)
 
 
   // M9 Generate ast classes, visitor and context condition

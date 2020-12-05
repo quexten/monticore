@@ -7,8 +7,11 @@ import de.monticore.expressions.setexpressions._ast.ASTIntersectionExpressionInf
 import de.monticore.expressions.setexpressions._ast.ASTIsInExpression;
 import de.monticore.expressions.setexpressions._ast.ASTSetInExpression;
 import de.monticore.expressions.setexpressions._ast.ASTUnionExpressionInfix;
-import de.monticore.expressions.setexpressions._visitor.SetExpressionsVisitor;
-import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbolSurrogate;
+import de.monticore.expressions.setexpressions._visitor.SetExpressionsHandler;
+import de.monticore.expressions.setexpressions._visitor.SetExpressionsTraverser;
+import de.monticore.expressions.setexpressions._visitor.SetExpressionsVisitor2;
+import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
+import de.monticore.symbols.basicsymbols._symboltable.TypeSymbolSurrogate;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,24 +24,20 @@ import static de.monticore.types.check.TypeCheck.isSubtypeOf;
  * This Visitor can calculate a SymTypeExpression (type) for the expressions in SetExpressions
  * It can be combined with other expressions in your language by creating a DelegatorVisitor
  */
-public class DeriveSymTypeOfSetExpressions extends DeriveSymTypeOfExpression implements SetExpressionsVisitor {
+public class DeriveSymTypeOfSetExpressions extends AbstractDeriveFromExpression implements SetExpressionsVisitor2, SetExpressionsHandler {
 
-    private SetExpressionsVisitor realThis;
+    protected SetExpressionsTraverser traverser;
 
     protected final List<String> collections = Lists.newArrayList("List", "Set");
 
-    public DeriveSymTypeOfSetExpressions() {
-        this.realThis = this;
+    @Override
+    public SetExpressionsTraverser getTraverser() {
+        return traverser;
     }
 
     @Override
-    public void setRealThis(SetExpressionsVisitor realThis) {
-        this.realThis = realThis;
-    }
-
-    @Override
-    public SetExpressionsVisitor getRealThis() {
-        return realThis;
+    public void setTraverser(SetExpressionsTraverser traverser) {
+        this.traverser = traverser;
     }
 
     @Override
@@ -51,13 +50,14 @@ public class DeriveSymTypeOfSetExpressions extends DeriveSymTypeOfExpression imp
     protected Optional<SymTypeExpression> calculateIsInExpression(ASTIsInExpression node) {
         SymTypeExpression elemResult = acceptThisAndReturnSymTypeExpressionOrLogError(node.getElem(), "0xA0286");
         SymTypeExpression setResult = acceptThisAndReturnSymTypeExpressionOrLogError(node.getSet(), "0xA0287");
-        ;
+
         Optional<SymTypeExpression> wholeResult = Optional.empty();
 
         boolean correct = false;
         for (String s : collections) {
             if (setResult.isGenericType() && setResult.getTypeInfo().getName().equals(s)) {
                 correct = true;
+                break;
             }
         }
         if (correct) {
@@ -133,11 +133,11 @@ public class DeriveSymTypeOfSetExpressions extends DeriveSymTypeOfExpression imp
       String right = rightGeneric.getTypeInfo().getName();
       if(collections.contains(left) && unbox(left).equals(unbox(right))) {
         if (compatible(leftGeneric.getArgument(0), rightGeneric.getArgument(0))) {
-            OOTypeSymbolSurrogate loader = new OOTypeSymbolSurrogate(left);
+            TypeSymbol loader = new TypeSymbolSurrogate(left);
             loader.setEnclosingScope(getScope(expr.getEnclosingScope()));
             wholeResult = Optional.of(SymTypeExpressionFactory.createGenerics(loader,leftGeneric.getArgument(0).deepClone()));
         } else if(compatible(rightGeneric.getArgument(0), leftGeneric.getArgument(0))) {
-            OOTypeSymbolSurrogate loader = new OOTypeSymbolSurrogate(right);
+            TypeSymbol loader = new TypeSymbolSurrogate(right);
             loader.setEnclosingScope(getScope(expr.getEnclosingScope()));
             wholeResult = Optional.of(SymTypeExpressionFactory.createGenerics(loader,rightGeneric.getArgument(0).deepClone()));
         }

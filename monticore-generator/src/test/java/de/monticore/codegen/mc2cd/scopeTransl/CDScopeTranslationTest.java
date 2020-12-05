@@ -30,7 +30,7 @@ public class CDScopeTranslationTest {
 
   @Test
   public void testDefinitionName() {
-    assertEquals("ScopeRule", compilationUnit.getCDDefinition().getName());
+    assertEquals("ScopeRuleScope", compilationUnit.getCDDefinition().getName());
   }
 
   @Test
@@ -50,7 +50,7 @@ public class CDScopeTranslationTest {
     ASTCDClass scopeClass = getClassBy("ScopeRule", compilationUnit);
     assertEquals(1, scopeClass.sizeCDAttributes());
     assertEquals(1, scopeClass.sizeCDMethods());
-    assertEquals(1, scopeClass.sizeInterfaces());
+    assertEquals(1, scopeClass.sizeInterface());
 
     assertTrue(scopeClass.isEmptyCDConstructors());
     assertTrue(scopeClass.isPresentSuperclass());
@@ -67,7 +67,7 @@ public class CDScopeTranslationTest {
     assertDeepEquals(String.class, cdMethod.getMCReturnType().getMCType());
     assertTrue(cdMethod.getModifier().isPublic());
     assertTrue(cdMethod.getModifier().isPresentStereotype());
-    assertEquals(1, cdMethod.getModifier().getStereotype().sizeValues());
+    assertEquals(1, cdMethod.getModifier().getStereotype().sizeValue());
     assertEquals("methodBody", cdMethod.getModifier().getStereotype().getValue(0).getName());
 
     ASTMCObjectType cdInterface = scopeClass.getInterface(0);

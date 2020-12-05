@@ -8,10 +8,10 @@ import de.monticore.grammar.grammar._ast.ASTMCGrammar;
 import de.monticore.grammar.grammar._cocos.GrammarASTMCGrammarCoCo;
 import de.monticore.grammar.grammar._symboltable.MCGrammarSymbol;
 import de.monticore.grammar.grammar._symboltable.ProdSymbol;
-import de.monticore.grammar.grammar._symboltable.ProdSymbolLoader;
+import de.monticore.grammar.grammar._symboltable.ProdSymbolSurrogate;
+import de.monticore.types.mcarraytypes._ast.ASTMCArrayType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
-import de.monticore.types.mcfullgenerictypes._ast.ASTMCArrayType;
 import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.logging.Log;
@@ -34,7 +34,7 @@ public class NoASTExtendsForClasses implements GrammarASTMCGrammarCoCo {
     Map<String, ProdSymbol> allProds = grammarSymbol.getProdsWithInherited();
     
     for (ProdSymbol classProd : grammarSymbol.getProds()) {
-      for (ProdSymbolLoader sClass : classProd.getAstSuperClasses()) {
+      for (ProdSymbolSurrogate sClass : classProd.getAstSuperClasses()) {
         if (!allProds.containsKey(
             sClass.getName().substring(TransformationHelper.AST_PREFIX.length()))) {
           Log.error(String.format(ERROR_CODE + ERROR_MSG_FORMAT,

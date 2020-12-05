@@ -1,12 +1,9 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("symTabMill", "scopeClass", "scopeBuilder", "scopeRuleAttrList")}
+${tc.signature("symTabMill", "scopeClass", "scopeRuleAttrList")}
 <#assign genHelper = glex.getGlobalVar("astHelper")>
-  de.monticore.symboltable.serialization.JsonDeSers.checkCorrectDeSerForKind("${scopeClass}", scopeJson);
   boolean isShadowingScope = scopeJson.getBooleanMemberOpt(de.monticore.symboltable.serialization.JsonDeSers.IS_SHADOWING_SCOPE).orElse(false);
-  ${scopeClass} scope = ${symTabMill}.${scopeBuilder?uncap_first}().setShadowing(isShadowingScope).build();
-  if (scopeJson.hasStringMember(de.monticore.symboltable.serialization.JsonDeSers.NAME)) {
-    scope.setName(scopeJson.getStringMember(de.monticore.symboltable.serialization.JsonDeSers.NAME));
-  }
+  ${scopeClass} scope = ${symTabMill}.scope();
+  scope.setShadowing(isShadowingScope);
   scope.setExportingSymbols(true);
 
 <#list scopeRuleAttrList as attr>
@@ -21,6 +18,6 @@ ${tc.signature("symTabMill", "scopeClass", "scopeBuilder", "scopeRuleAttrList")}
     scope.${genHelper.getPlainSetter(attr)}(deserialize${attr.getName()?cap_first}(scopeJson));
   </#if>
 </#list>
-  deserializeAdditionalScopeAttributes(scope,scopeJson);
+  deserializeAddons(scope,scopeJson);
   addSymbols(scopeJson, scope);
   return scope;

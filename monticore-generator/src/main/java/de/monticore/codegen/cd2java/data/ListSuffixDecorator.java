@@ -64,7 +64,7 @@ public class ListSuffixDecorator extends AbstractTransformer<ASTCDCompilationUni
 
   protected boolean hasDerivedAttributeName(ASTCDAttribute astcdAttribute) {
     return astcdAttribute.isPresentModifier() && astcdAttribute.getModifier().isPresentStereotype()
-        && astcdAttribute.getModifier().getStereotype().sizeValues() > 0 &&
+        && astcdAttribute.getModifier().getStereotype().sizeValue() > 0 &&
         astcdAttribute.getModifier().getStereotype().getValueList()
             .stream()
             .anyMatch(v -> v.getName().equals(MC2CDStereotypes.DERIVED_ATTRIBUTE_NAME.toString()));

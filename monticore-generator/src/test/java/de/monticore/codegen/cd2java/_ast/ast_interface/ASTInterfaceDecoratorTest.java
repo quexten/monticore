@@ -143,7 +143,7 @@ public class ASTInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterfacesCount() {
-    assertEquals(2, dataInterface.sizeInterfaces());
+    assertEquals(2, dataInterface.sizeInterface());
   }
 
   @Test

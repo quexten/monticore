@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+grammar Automata2 extends InvAutomata {
+  
+  start Automaton;
+
+  // use this production as Invariant in Automata
+  @Override
+  Invariant = LogicExpr | ["-"] ;
+
+  interface LogicExpr;
+  Truth implements LogicExpr = tt:["true"] | ff:["false"] ;
+  And   implements LogicExpr = LogicExpr "&&" LogicExpr ;
+  Not   implements LogicExpr = "!" LogicExpr ;
+  Var   implements LogicExpr = Name ;
+
+}

@@ -100,12 +100,12 @@ public class ScopeClassDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testClassName() {
-    assertEquals("AutomatonScopeCDScope", scopeClass.getName());
+    assertEquals("AutomatonScope", scopeClass.getName());
   }
 
   @Test
   public void testSuperInterfacesCount() {
-    assertEquals(1, scopeClass.sizeInterfaces());
+    assertEquals(1, scopeClass.sizeInterface());
   }
 
   @Test
@@ -128,44 +128,44 @@ public class ScopeClassDecoratorTest extends DecoratorTestCase {
   public void testDefaultConstructor() {
     ASTCDConstructor cdConstructor = scopeClass.getCDConstructor(0);
     assertDeepEquals(PUBLIC, cdConstructor.getModifier());
-    assertEquals("AutomatonScopeCDScope", cdConstructor.getName());
+    assertEquals("AutomatonScope", cdConstructor.getName());
 
     assertTrue(cdConstructor.isEmptyCDParameters());
 
-    assertTrue(cdConstructor.isEmptyExceptions());
+    assertTrue(cdConstructor.isEmptyException());
   }
 
   @Test
   public void testShadowingConstructor() {
     ASTCDConstructor cdConstructor = scopeClass.getCDConstructor(1);
     assertDeepEquals(PUBLIC, cdConstructor.getModifier());
-    assertEquals("AutomatonScopeCDScope", cdConstructor.getName());
+    assertEquals("AutomatonScope", cdConstructor.getName());
 
     assertEquals(1, cdConstructor.sizeCDParameters());
     assertBoolean(cdConstructor.getCDParameter(0).getMCType());
     assertEquals("shadowing", cdConstructor.getCDParameter(0).getName());
 
-    assertTrue(cdConstructor.isEmptyExceptions());
+    assertTrue(cdConstructor.isEmptyException());
   }
 
   @Test
   public void testEnclosingScopeConstructor() {
     ASTCDConstructor cdConstructor = scopeClass.getCDConstructor(2);
     assertDeepEquals(PUBLIC, cdConstructor.getModifier());
-    assertEquals("AutomatonScopeCDScope", cdConstructor.getName());
+    assertEquals("AutomatonScope", cdConstructor.getName());
 
     assertEquals(1, cdConstructor.sizeCDParameters());
     assertDeepEquals(I_AUTOMATON_SCOPE, cdConstructor.getCDParameter(0).getMCType());
     assertEquals("enclosingScope", cdConstructor.getCDParameter(0).getName());
 
-    assertTrue(cdConstructor.isEmptyExceptions());
+    assertTrue(cdConstructor.isEmptyException());
   }
 
   @Test
   public void testShadowingAndEnclosingScopeConstructor() {
     ASTCDConstructor cdConstructor = scopeClass.getCDConstructor(3);
     assertDeepEquals(PUBLIC, cdConstructor.getModifier());
-    assertEquals("AutomatonScopeCDScope", cdConstructor.getName());
+    assertEquals("AutomatonScope", cdConstructor.getName());
 
     assertEquals(2, cdConstructor.sizeCDParameters());
     assertDeepEquals(I_AUTOMATON_SCOPE, cdConstructor.getCDParameter(0).getMCType());
@@ -174,7 +174,7 @@ public class ScopeClassDecoratorTest extends DecoratorTestCase {
     assertBoolean(cdConstructor.getCDParameter(1).getMCType());
     assertEquals("shadowing", cdConstructor.getCDParameter(1).getName());
 
-    assertTrue(cdConstructor.isEmptyExceptions());
+    assertTrue(cdConstructor.isEmptyException());
   }
 
   @Test
@@ -312,7 +312,7 @@ public class ScopeClassDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testMethodCount() {
-    assertEquals(91, scopeClass.getCDMethodList().size());
+    assertEquals(92, scopeClass.getCDMethodList().size());
   }
 
   @Test
@@ -394,15 +394,6 @@ public class ScopeClassDecoratorTest extends DecoratorTestCase {
   }
 
 
-  @Test
-  public void testGetSymbolsSizeMethod() {
-    ASTCDMethod method = getMethodBy("getSymbolsSize", scopeClass);
-
-    assertDeepEquals(PUBLIC, method.getModifier());
-    assertInt(method.getMCReturnType().getMCType());
-
-    assertTrue(method.isEmptyCDParameters());
-  }
 
   @Test
   public void testGetAutomatonSymbolsMethod() {

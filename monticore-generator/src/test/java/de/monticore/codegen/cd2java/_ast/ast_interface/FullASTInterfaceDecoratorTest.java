@@ -80,7 +80,7 @@ public class FullASTInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterfacesCount() {
-    assertEquals(2, astcdInterface.sizeInterfaces());
+    assertEquals(2, astcdInterface.sizeInterface());
   }
 
   @Test

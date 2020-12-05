@@ -68,6 +68,14 @@ public class GrammarCoCos {
     checker.addCoCo(new KeywordRuleInvalid());
     checker.addCoCo(new TerminalCritical());
     checker.addCoCo(new PackageNameLowerCase());
+    checker.addCoCo(new NoOverridingNTHasAnnotation());
+    checker.addCoCo(new OverridingNTHasNoAnnotation());
+    checker.addCoCo(new ProdWithDoubleAnnos());
+    checker.addCoCo(new ExternalNTNoASTRule());
+    checker.addCoCo(new DerivedAndManualListName());
+    checker.addCoCo(new KeyRuleWithoutName());
+    checker.addCoCo(new SymbolWithManyNames());
+    checker.addCoCo(new OverridingAdditionalAttributes());
     // checker.addCoCo(new NoNTInheritanceCycle());
 
     return checker;
@@ -87,7 +95,6 @@ public class GrammarCoCos {
     checker.addCoCo(new ReferencedNTNotDefined());
     checker.addCoCo(new KeywordInvalidName());
     checker.addCoCo(new LexNTsNotEmpty());
-
 
     return checker;
   }

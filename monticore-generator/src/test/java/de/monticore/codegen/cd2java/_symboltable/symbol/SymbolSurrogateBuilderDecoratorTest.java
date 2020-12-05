@@ -78,7 +78,7 @@ public class SymbolSurrogateBuilderDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperNoInterfaces() {
-    assertTrue(builderClass.isEmptyInterfaces());
+    assertTrue(builderClass.isEmptyInterface());
   }
 
 
@@ -101,7 +101,7 @@ public class SymbolSurrogateBuilderDecoratorTest extends DecoratorTestCase {
 
     assertTrue(cdConstructor.isEmptyCDParameters());
 
-    assertTrue(cdConstructor.isEmptyExceptions());
+    assertTrue(cdConstructor.isEmptyException());
   }
 
   @Test

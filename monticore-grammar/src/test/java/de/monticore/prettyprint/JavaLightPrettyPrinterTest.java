@@ -1,9 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.monticore.prettyprint;
 
-import de.monticore.expressions.javaclassexpressions._ast.ASTCreatorExpression;
 import de.monticore.javalight._ast.*;
-import de.monticore.statements.mcvardeclarationstatements._ast.ASTLocalVariableDeclaration;
 import de.monticore.testjavalight._parser.TestJavaLightParser;
 import de.se_rwth.commons.logging.Log;
 import de.se_rwth.commons.logging.LogStub;
@@ -14,14 +12,14 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JavaLightPrettyPrinterTest {
 
   private TestJavaLightParser parser = new TestJavaLightParser();
 
-  private JavaLightPrettyPrinterDelegator prettyPrinter = new JavaLightPrettyPrinterDelegator(new IndentPrinter());
+  private JavaLightFullPrettyPrinter prettyPrinter = new JavaLightFullPrettyPrinter(new IndentPrinter());
 
   @BeforeClass
   public static void setUp() {
@@ -33,23 +31,7 @@ public class JavaLightPrettyPrinterTest {
   public void init() {
     prettyPrinter.getPrinter().clearBuffer();
   }
-
-  @Test
-  public void testClassBlock() throws IOException {
-    Optional<ASTClassBlock> result = parser.parse_StringClassBlock("static { private Integer foo = a;}");
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-    ASTClassBlock ast = result.get();
-
-    String output = prettyPrinter.prettyprint(ast);
-
-    result = parser.parse_StringClassBlock(output);
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-
-    assertTrue(ast.deepEquals(result.get()));
-  }
-
+  
   @Test
   public void testMethodDeclaration() throws IOException {
     Optional<ASTMethodDeclaration> result = parser.parse_StringMethodDeclaration("private static final int foo(String s, boolean b)[][][] throws e.Exception { private Integer foo = a; }");
@@ -76,23 +58,6 @@ public class JavaLightPrettyPrinterTest {
     String output = prettyPrinter.prettyprint(ast);
 
     result = parser.parse_StringConstructorDeclaration(output);
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-
-    assertTrue(ast.deepEquals(result.get()));
-  }
-
-  @Test
-  public void testFieldDeclaration() throws IOException {
-    Optional<ASTLocalVariableDeclaration> result = parser.parse_StringLocalVariableDeclaration("private static List a = b, c = d");
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-    ASTLocalVariableDeclaration ast = result.get();
-
-    prettyPrinter.handle(ast);
-    String output = prettyPrinter.getPrinter().getContent();
-
-    result = parser.parse_StringLocalVariableDeclaration(output);
     assertFalse(parser.hasErrors());
     assertTrue(result.isPresent());
 
@@ -173,22 +138,6 @@ public class JavaLightPrettyPrinterTest {
     String output = prettyPrinter.prettyprint(ast);
 
     result = parser.parse_StringFormalParameterListing(output);
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-
-    assertTrue(ast.deepEquals(result.get()));
-  }
-
-  @Test
-  public void testFormalParameter() throws IOException {
-    Optional<ASTFormalParameter> result = parser.parse_StringFormalParameter("public float f");
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-    ASTFormalParameter ast = result.get();
-
-    String output = prettyPrinter.prettyprint(ast);
-
-    result = parser.parse_StringFormalParameter(output);
     assertFalse(parser.hasErrors());
     assertTrue(result.isPresent());
 
@@ -286,22 +235,6 @@ public class JavaLightPrettyPrinterTest {
     String output = prettyPrinter.prettyprint(ast);
 
     result = parser.parse_StringElementValuePair(output);
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-
-    assertTrue(ast.deepEquals(result.get()));
-  }
-
-  @Test
-  public void testEnhancedForControl() throws IOException {
-    Optional<ASTEnhancedForControl> result = parser.parse_StringEnhancedForControl("protected int c[] : a");
-    assertFalse(parser.hasErrors());
-    assertTrue(result.isPresent());
-    ASTEnhancedForControl ast = result.get();
-
-    String output = prettyPrinter.prettyprint(ast);
-
-    result = parser.parse_StringEnhancedForControl(output);
     assertFalse(parser.hasErrors());
     assertTrue(result.isPresent());
 

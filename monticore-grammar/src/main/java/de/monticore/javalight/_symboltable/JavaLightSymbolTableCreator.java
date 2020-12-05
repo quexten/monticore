@@ -4,21 +4,25 @@ package de.monticore.javalight._symboltable;
 import de.monticore.javalight._ast.*;
 import de.monticore.statements.mccommonstatements._ast.ASTJavaModifier;
 import de.monticore.statements.mcstatementsbasis._ast.ASTMCModifier;
-import de.monticore.types.check.SymTypeExpression;
-import de.monticore.types.check.SymTypeExpressionFactory;
-import de.monticore.types.check.SymTypeOfNull;
-import de.monticore.types.check.SynthesizeSymTypeFromMCFullGenericTypes;
+import de.monticore.types.check.*;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedName;
 import de.monticore.types.mcbasictypes._ast.ASTMCReturnType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.symbols.oosymbols._symboltable.FieldSymbol;
 import de.monticore.symbols.oosymbols._symboltable.IOOSymbolsScope;
+import de.monticore.types.mcfullgenerictypes.MCFullGenericTypesMill;
+import de.monticore.types.mcfullgenerictypes._visitor.MCFullGenericTypesTraverser;
 
 import java.util.Deque;
 
 import static de.monticore.statements.mccommonstatements._ast.ASTConstantsMCCommonStatements.*;
 
+@Deprecated
 public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP {
+
+  public JavaLightSymbolTableCreator(){
+    super();
+  }
 
   public JavaLightSymbolTableCreator(IJavaLightScope enclosingScope) {
     super(enclosingScope);
@@ -29,8 +33,8 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
   }
 
   @Override
-  protected void initialize_MethodDeclaration(MethOrConstrSymbol symbol, ASTMethodDeclaration ast) {
-    addModifiersToMethOrConstr(symbol, ast.getMCModifiersList());
+  protected void initialize_MethodDeclaration(JavaMethodSymbol symbol, ASTMethodDeclaration ast) {
+    addModifiersToMethOrConstr(symbol, ast.getMCModifierList());
     symbol.setReturnType(createTypeLoader(ast.getMCReturnType()));
     if (ast.isPresentThrows()) {
       addThrowsToMethod(symbol, ast.getThrows());
@@ -42,8 +46,8 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
   }
 
   @Override
-  protected void initialize_InterfaceMethodDeclaration(MethOrConstrSymbol symbol, ASTInterfaceMethodDeclaration ast) {
-    addModifiersToMethOrConstr(symbol, ast.getMCModifiersList());
+  protected void initialize_InterfaceMethodDeclaration(JavaMethodSymbol symbol, ASTInterfaceMethodDeclaration ast) {
+    addModifiersToMethOrConstr(symbol, ast.getMCModifierList());
     symbol.setReturnType(createTypeLoader(ast.getMCReturnType()));
     if (ast.isPresentThrows()) {
       addThrowsToMethod(symbol, ast.getThrows());
@@ -55,8 +59,8 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
   }
 
   @Override
-  protected void initialize_ConstructorDeclaration(MethOrConstrSymbol symbol, ASTConstructorDeclaration ast) {
-    addModifiersToMethOrConstr(symbol, ast.getMCModifiersList());
+  protected void initialize_ConstructorDeclaration(JavaMethodSymbol symbol, ASTConstructorDeclaration ast) {
+    addModifiersToMethOrConstr(symbol, ast.getMCModifierList());
     if (ast.isPresentThrows()) {
       addThrowsToMethod(symbol, ast.getThrows());
     }
@@ -64,12 +68,6 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
             && ast.getFormalParameters().getFormalParameterListing().isPresentLastFormalParameter()) {
       symbol.setIsElliptic(true);
     }
-  }
-
-  @Override
-  public void endVisit(ASTFormalParameter ast) {
-    FieldSymbol symbol = ast.getDeclaratorId().getSymbol();
-    symbol.setType(createTypeLoader(ast.getMCType()));
   }
 
   @Override
@@ -78,7 +76,7 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
     symbol.setType(createTypeLoader(ast.getMCType()));
   }
 
-  protected void addModifiersToMethOrConstr(MethOrConstrSymbol javaMethodSymbol,
+  protected void addModifiersToMethOrConstr(JavaMethodSymbol javaMethodSymbol,
                                             Iterable<? extends ASTMCModifier> astModifierList) {
     for (ASTMCModifier modifier : astModifierList) {
       if (modifier instanceof ASTJavaModifier) {
@@ -122,34 +120,30 @@ public class JavaLightSymbolTableCreator extends JavaLightSymbolTableCreatorTOP 
     }
   }
 
-  protected void addThrowsToMethod(MethOrConstrSymbol javaMethodSymbol, ASTThrows throws1) {
-    for (ASTMCQualifiedName astQualifiedName : throws1.getMCQualifiedNamesList()) {
+  protected void addThrowsToMethod(JavaMethodSymbol javaMethodSymbol, ASTThrows throws1) {
+    for (ASTMCQualifiedName astQualifiedName : throws1.getMCQualifiedNameList()) {
       javaMethodSymbol.addExceptions(createTypeLoader(astQualifiedName));
     }
   }
 
   private SymTypeExpression createTypeLoader(ASTMCQualifiedName ast) {
-    SynthesizeSymTypeFromMCFullGenericTypes syn = new SynthesizeSymTypeFromMCFullGenericTypes();
-    // Start visitor and set enclosingScope
-    ast.accept(getRealThis());
-    ast.accept(syn);
-    return syn.getResult().orElse(new SymTypeOfNull());
+    FullSynthesizeFromMCFullGenericTypes synFromFull = new FullSynthesizeFromMCFullGenericTypes();
+    // Start visitor
+    ast.accept(synFromFull.getTraverser());
+    return synFromFull.getResult().orElse(new SymTypeOfNull());
   }
 
   private SymTypeExpression createTypeLoader(ASTMCType ast) {
-    SynthesizeSymTypeFromMCFullGenericTypes syn = new SynthesizeSymTypeFromMCFullGenericTypes();
-    // Start visitor and set enclosingScope
-    ast.accept(getRealThis());
-    ast.accept(syn);
-    return syn.getResult().orElse(new SymTypeOfNull());
+    FullSynthesizeFromMCFullGenericTypes synFromFull = new FullSynthesizeFromMCFullGenericTypes();
+    // Start visitor
+    ast.accept(synFromFull.getTraverser());
+    return synFromFull.getResult().orElse(new SymTypeOfNull());
   }
 
   private SymTypeExpression createTypeLoader(ASTMCReturnType ast) {
     if (ast.isPresentMCType()) {
       return createTypeLoader(ast.getMCType());
     } else {
-      // Start visitor and set enclosingScope
-      ast.accept(getRealThis());
       // TODO Bessere Lösung
       return SymTypeExpressionFactory.createTypeObject("void", (IOOSymbolsScope) ast.getEnclosingScope());
     }

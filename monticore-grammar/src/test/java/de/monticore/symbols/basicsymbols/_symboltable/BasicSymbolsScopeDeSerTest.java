@@ -20,17 +20,20 @@ import static org.junit.Assert.*;
 
 public class BasicSymbolsScopeDeSerTest {
 
-  private BasicSymbolsScope scope;
+  private IBasicSymbolsArtifactScope scope;
 
   @Before
   public void setUp(){
     LogStub.init();
-    Log.enableFailQuick(false);
+//    Log.enableFailQuick(false);
+
     //initialize scope, add some TypeSymbols, TypeVarSymbols, VariableSymbols and FunctionSymbols
-    scope = BasicSymbolsMill.basicSymbolsArtifactScopeBuilder().setPackageName("").setImportsList(Lists.newArrayList()).build();
+    scope = BasicSymbolsMill.artifactScope();
+    scope.setPackageName("");
+    scope.setImportsList(Lists.newArrayList());
     scope.setName("Test");
 
-    BasicSymbolsScope typeSpannedScope = BasicSymbolsMill.basicSymbolsScopeBuilder().build();
+    IBasicSymbolsScope typeSpannedScope = BasicSymbolsMill.scope();
 
     //put type into main scope
     TypeSymbol type = BasicSymbolsMill.typeSymbolBuilder()
@@ -47,12 +50,12 @@ public class BasicSymbolsScopeDeSerTest {
     //put subtype into main scope, test if supertypes are serialized correctly
     TypeSymbol subtype = BasicSymbolsMill.typeSymbolBuilder()
         .setName("SubType")
-        .setSpannedScope(BasicSymbolsMill.basicSymbolsScopeBuilder().build())
+        .setSpannedScope(BasicSymbolsMill.scope())
         .setEnclosingScope(scope)
         .setSuperTypesList(Lists.newArrayList(symType1))
         .build();
 
-    subtype.setSpannedScope(BasicSymbolsMill.basicSymbolsScopeBuilder().build());
+    subtype.setSpannedScope(BasicSymbolsMill.scope());
 
     //put TypeVariable T into spanned scope of type
     TypeVarSymbol t = BasicSymbolsMill.typeVarSymbolBuilder()
@@ -60,7 +63,7 @@ public class BasicSymbolsScopeDeSerTest {
         .setEnclosingScope(type.getSpannedScope())
         .build();
 
-    t.setSpannedScope(BasicSymbolsMill.basicSymbolsScopeBuilder().build());
+    t.setSpannedScope(BasicSymbolsMill.scope());
 
     typeSpannedScope.add(t);
 
@@ -77,11 +80,11 @@ public class BasicSymbolsScopeDeSerTest {
     FunctionSymbol function = BasicSymbolsMill.functionSymbolBuilder()
         .setName("function")
         .setEnclosingScope(type.getSpannedScope())
-        .setSpannedScope(BasicSymbolsMill.basicSymbolsScopeBuilder().build())
+        .setSpannedScope(BasicSymbolsMill.scope())
         .setReturnType(SymTypeExpressionFactory.createTypeConstant("int"))
         .build();
 
-    function.setSpannedScope(BasicSymbolsMill.basicSymbolsScopeBuilder().build());
+    function.setSpannedScope(BasicSymbolsMill.scope());
 
     typeSpannedScope.add(function);
 
@@ -96,12 +99,12 @@ public class BasicSymbolsScopeDeSerTest {
     performRoundTripSerialization(scope);
   }
 
-  public void performRoundTripSerialization(BasicSymbolsScope scope){
+  public void performRoundTripSerialization(IBasicSymbolsScope scope){
     BasicSymbolsScopeDeSer deser = new BasicSymbolsScopeDeSer();
     //first serialize the scope using the deser
     String serialized = deser.serialize(scope);
     // then deserialize it
-    BasicSymbolsScope deserialized = deser.deserialize(serialized);
+    IBasicSymbolsArtifactScope deserialized = deser.deserialize(serialized);
     assertNotNull(deserialized);
     // and assert that the deserialized scope equals the one before
     //check that both can resolve the type "Type"
@@ -147,15 +150,19 @@ public class BasicSymbolsScopeDeSerTest {
 
   @Test
   public void testInvalidJsonForSerializingReturnsError(){
-    String invalidJsonForSerializing = "{\n\t\"Foo\":\"bar\"\n}";
-    String invalidJsonForSerializing2 = "{\n\t\"symTypeExpression\": {\n\t\t\"foo\":\"bar\", \n\t\t\"foo2\":\"bar2\"\n\t}\n}";
+    String invalidJsonForSerializing = "{\n\t\"symbols\":\"SymbolsAreNotInAnArray\"\n}";
+    String invalidJsonForSerializing2 = "{\"symbols\": [\"SymbolIsNotAnObject\"]}";
+    String invalidJsonForSerializing3 = "{\"symbols\": [{\"kind\":\"unknown\"}]}";
 
     BasicSymbolsScopeDeSer deser = new BasicSymbolsScopeDeSer();
     deser.deserialize(invalidJsonForSerializing);
-    assertTrue(Log.getFindings().get(0).getMsg().startsWith("0xA7224"));
+    assertTrue(Log.getFindings().get(0).getMsg().startsWith("0xA1235"));
 
     deser.deserialize(invalidJsonForSerializing2);
-    assertTrue(Log.getFindings().get(1).getMsg().startsWith("0xA7224"));
+    assertTrue(Log.getFindings().get(1).getMsg().startsWith("0xA1234"));
+
+    deser.deserialize(invalidJsonForSerializing3);
+    assertTrue(Log.getFindings().get(2).getMsg().startsWith("0xA1234"));
   }
 
 

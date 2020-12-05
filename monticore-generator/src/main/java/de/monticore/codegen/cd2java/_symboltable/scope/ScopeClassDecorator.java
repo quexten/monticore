@@ -77,7 +77,7 @@ public class ScopeClassDecorator extends AbstractDecorator {
    * @param symbolInput for Symbol Classes and Interfaces
    */
   public ASTCDClass decorate(ASTCDCompilationUnit scopeInput, ASTCDCompilationUnit symbolInput) {
-    String scopeClassName = scopeInput.getCDDefinition().getName() + SCOPE_SUFFIX;
+    String scopeClassName = symbolTableService.getCDName() + SCOPE_SUFFIX;
     ASTMCQualifiedType scopeInterfaceType = symbolTableService.getScopeInterfaceType();
 
     // attributes and methods from scope rule
@@ -151,7 +151,6 @@ public class ScopeClassDecorator extends AbstractDecorator {
         .addAllCDMethods(symbolMethods)
         .addAllCDAttributes(symbolAlreadyResolvedAttributes)
         .addAllCDMethods(symbolAlreadyResolvedMethods)
-        .addCDMethod(createSymbolsSizeMethod(symbolAttributes.keySet()))
         .addCDAttribute(enclosingScopeAttribute)
         .addAllCDMethods(enclosingScopeMethods)
         .addCDAttribute(spanningSymbolAttribute)
@@ -169,6 +168,7 @@ public class ScopeClassDecorator extends AbstractDecorator {
         .addCDAttribute(createSubScopesAttribute(scopeInterfaceType))
         .addAllCDMethods(createSubScopeMethods(scopeInterfaceType))
         .addAllCDMethods(createAcceptMethods(scopeClassName))
+        .addAllCDMethods(createAcceptTraverserMethods(scopeClassName))
         .addAllCDMethods(createSuperScopeMethods(symbolTableService.getScopeInterfaceFullName()));
     if (scopeRuleSuperClass.isPresent()) {
       builder.setSuperclass(scopeRuleSuperClass.get());
@@ -239,16 +239,31 @@ public class ScopeClassDecorator extends AbstractDecorator {
 
     return acceptMethods;
   }
+  
+  protected List<ASTCDMethod> createAcceptTraverserMethods(String scopeClassName) {
+    List<ASTCDMethod> acceptMethods = new ArrayList<>();
 
-  protected ASTCDMethod createSymbolsSizeMethod(Collection<String> symbolAttributeNames) {
-    ASTCDMethod getSymbolSize = getCDMethodFacade().createMethod(PUBLIC, getMCTypeFacade().createIntType(), "getSymbolsSize");
-    // if there are no symbols, the symbol size is always zero
-    if (symbolAttributeNames.isEmpty()) {
-      this.replaceTemplate(EMPTY_BODY, getSymbolSize, new StringHookPoint("return 0;"));
+    String visitor = visitorService.getTraverserInterfaceFullName();
+    ASTCDParameter parameter = getCDParameterFacade().createParameter(getMCTypeFacade().createQualifiedType(visitor), VISITOR_PREFIX);
+    ASTCDMethod ownAcceptMethod = getCDMethodFacade().createMethod(PUBLIC, ACCEPT_METHOD, parameter);
+    if (isScopeTop()) {
+      String errorCode = symbolTableService.getGeneratedErrorCode(scopeClassName + ACCEPT_METHOD);
+      this.replaceTemplate(EMPTY_BODY, ownAcceptMethod, new TemplateHookPoint(TEMPLATE_PATH + "AcceptOwn", scopeClassName, errorCode));
     } else {
-      this.replaceTemplate(EMPTY_BODY, getSymbolSize, new TemplateHookPoint(TEMPLATE_PATH + "GetSymbolSize", symbolAttributeNames));
+      this.replaceTemplate(EMPTY_BODY, ownAcceptMethod, new StringHookPoint("visitor.handle(this);"));
     }
-    return getSymbolSize;
+    acceptMethods.add(ownAcceptMethod);
+
+    for (CDDefinitionSymbol cdDefinitionSymbol : symbolTableService.getSuperCDsTransitive()) {
+      String superVisitor = visitorService.getTraverserInterfaceFullName(cdDefinitionSymbol);
+      ASTCDParameter superVisitorParameter = getCDParameterFacade().createParameter(getMCTypeFacade().createQualifiedType(superVisitor), VISITOR_PREFIX);
+      ASTCDMethod acceptMethod = getCDMethodFacade().createMethod(PUBLIC, ACCEPT_METHOD, superVisitorParameter);
+      String errorCode = symbolTableService.getGeneratedErrorCode(scopeClassName + cdDefinitionSymbol.getFullName()+ACCEPT_METHOD);
+      this.replaceTemplate(EMPTY_BODY, acceptMethod, new TemplateHookPoint(TEMPLATE_PATH + "AcceptScope", visitor, scopeClassName, superVisitor, errorCode));
+      acceptMethods.add(acceptMethod);
+    }
+
+    return acceptMethods;
   }
 
   protected Map<String, ASTCDAttribute> getSuperSymbolAttributes() {

@@ -12,8 +12,6 @@ public class SymbolTableConstants {
 
   public static final String SYMBOL_TABLE_PACKAGE = "_symboltable";
 
-  public static final String SERIALIZATION_PACKAGE = "serialization";
-
   /**
    * suffixes, prefixes
    */
@@ -24,7 +22,11 @@ public class SymbolTableConstants {
 
   public static final String INTERFACE_PREFIX = "I";
 
+  public static final String PHASED_SUFFIX = "Phased";
+
   public static final String SYMBOL_TABLE_CREATOR_SUFFIX = "SymbolTableCreator";
+
+  public static final String SCOPES_GENITOR_SUFFIX = "ScopesGenitor";
 
   public static final String SYM_TAB_MILL_SUFFIX = "SymTabMill";
 
@@ -34,21 +36,17 @@ public class SymbolTableConstants {
 
   public static final String COMMON_PREFIX = "Common";
 
-  public static final String RESOLVING_DELEGATE_SUFFIX = "ResolvingDelegate";
+  public static final String RESOLVER_SUFFIX = "Resolver";
 
   public static final String DELEGATOR_SUFFIX = "Delegator";
 
   public static final String STC_FOR = "%sSTCFor%s";
 
-  public static final String LANGUAGE_SUFFIX = "Language";
-
   public static final String SURROGATE_SUFFIX = "Surrogate";
 
   public static final String DE_SER_SUFFIX = "DeSer";
 
-  public static final String SYMBOL_TABLE_PRINTER_SUFFIX = "SymbolTablePrinter";
-
-  public static final String MODEL_LOADER_SUFFIX = "ModelLoader";
+  public static final String SYMBOLS_2_JSON_SUFFIX = "Symbols2Json";
 
   /**
    * runtime classes
@@ -63,12 +61,6 @@ public class SymbolTableConstants {
   public static final String I_GLOBAL_SCOPE_TYPE = "de.monticore.symboltable.IGlobalScope";
 
   public static final String IMPORT_STATEMENT = "de.monticore.symboltable.ImportStatement";
-
-  public static final String I_MODEL_LOADER = "de.monticore.modelloader.IModelLoader";
-
-  public static final String AST_PROVIDER = "de.monticore.modelloader.AstProvider<%s>";
-
-  public static final String MODEL_COORDINATE = "de.monticore.io.paths.ModelCoordinate";
 
   public static final String PATH = "java.nio.file.Path";
 
@@ -90,6 +82,8 @@ public class SymbolTableConstants {
 
   public static final String MODEL_PATH_TYPE = "de.monticore.io.paths.ModelPath";
 
+  public static final String I_DE_SER = "de.monticore.symboltable.serialization.IDeSer";
+
   /**
    * attribute names
    */
@@ -110,7 +104,7 @@ public class SymbolTableConstants {
 
   public static final String MODEL_PATH_VAR = "modelPath";
 
-  public static final String FILE_EXTENSION_VAR = "modelFileExtension";
+  public static final String FILE_EXTENSION_VAR = "fileExt";
 
   public static final String MODEL_LOADER_VAR = "modelLoader";
 
@@ -132,6 +126,8 @@ public class SymbolTableConstants {
 
   public static final String SCOPE_JSON_VAR = "scopeJson";
 
+  public static final String DESERS_VAR = "desers";
+
   public static final String FOUND_SYMBOL_DELEGATE = "false";
 
   public static final String PREDICATE_DELEGATE = "x -> true";
@@ -149,8 +145,6 @@ public class SymbolTableConstants {
   public static final String RESOLVE_ADAPTED = "resolveAdapted%s";
 
   public static final String CONTINUE_WITH_ENCLOSING_SCOPE = "continue%sWithEnclosingScope";
-
-  public static final String CALCULATED_MODEL_NAME = "calculatedModelName";
 
   public static final String DESERIALIZE = "deserialize";
 

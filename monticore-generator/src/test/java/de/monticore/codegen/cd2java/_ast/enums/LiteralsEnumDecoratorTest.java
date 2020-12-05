@@ -59,7 +59,7 @@ public class LiteralsEnumDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testAttributeCount() {
-  assertEquals(1, cdEnum.sizeCDAttributes());
+  assertEquals(1, cdEnum.sizeCDAttribute());
   }
 
   @Test

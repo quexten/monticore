@@ -50,7 +50,7 @@ public class PackageInterfaceDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testSuperInterface() {
-    assertEquals(1, packageInterface.sizeInterfaces());
+    assertEquals(1, packageInterface.sizeInterface());
     assertDeepEquals("de.monticore.emf._ast.ASTEPackage", packageInterface.getInterface(0));
   }
 

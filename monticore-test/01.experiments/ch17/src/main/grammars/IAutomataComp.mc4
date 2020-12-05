@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+import de.monticore.*;
+component grammar IAutomataComp extends MCBasics {
+
+  Automaton =
+    "automaton" Name "{" (State | Transition)* "}" ;
+
+  // the external nonterminal is to be filled in 
+  // a grammar extension
+  external Invariant;
+
+  State = "state" Name
+    Invariant ( "<<" ["initial"] ">>" | "<<" ["final"] ">>" )* ";" ;
+
+  Transition =
+    from:Name "-" input:Name ">" to:Name ";" ;
+}

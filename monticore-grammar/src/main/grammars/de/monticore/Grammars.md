@@ -1,6 +1,6 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<!-- Alpha-version: This is intended to become a MontiCore stable explanation. -->
+<!-- This is a MontiCore stable explanation. -->
 
 # MontiCore Core Grammars - an Overview
 
@@ -15,9 +15,10 @@ and most importandly, these
 extensions and the grammar composition are compatible, which
 leads to optimal forms of **reuse**.
 
-The following is a list of language components, mainly defined through a 
-primary grammar plus associated Java- and Template-Files, 
-available in the *MontiCore* core project 
+The following is a library of language components
+that the core MontiCore project provides, mainly defined through a 
+primary grammar plus associated Java- and Template-Files. 
+These are available in the *MontiCore* core project 
 together with short descriptions and their status 
 ([Status of Grammars](../../../../../../00.org/Explanations/StatusOfGrammars.md)).
 
@@ -28,9 +29,10 @@ project under `monticore-grammar/src/main/grammars/` in packages
 * `de.monticore.expressions`
 * `de.monticore.literals`
 * `de.monticore.statements`
+* `de.monticore.symbols`
 * `de.monticore.types`
 
-For [more langauges, see here](../../../../../../docs/Languages.md).
+For [more langauges and language components, see here](../../../../../../docs/Languages.md).
 
 
 Table of Contents:
@@ -50,6 +52,7 @@ It should be useful in many languages.
 
 These grammars generally deal with type definitions and build on each 
 other. Some snipets for type definitions:
+
   ```
   MCBasicTypes      boolean  byte  short  int
                     long  char  float  double
@@ -62,7 +65,8 @@ other. Some snipets for type definitions:
   MCFullGenericTypes
                     Foo<? extends .>
                     Foo<? super .>
-                    Person[]
+  MCArrayTypes
+                    Person[]  int[][]
   ```
   
 ### [MCBasicTypes.mc4](types/MCBasicTypes.mc4) (stable)
@@ -92,14 +96,29 @@ although they don't cover type restrictions on the arguments, like in
 Java. 
 
 
-### [MCFullGenericTypes.mc4](types/MCFullGenericTypes.mc4) (Beta: In Stabilization)
+### [MCFullGenericTypes.mc4](types/MCFullGenericTypes.mc4) (stable)
 * This grammar completes the type definitions to 
 support the full Java type system including wildcards Blubb<? extends A>
 * A general advice: When you are not sure that you need this kind of
 types, then use a simpler version from above. Type checking ist tricky.
 
 
-### [BasicSymbols.mc4](symbols/BasicSymbols.mc4) (Beta: In Stabilization)
+### [MCArrayTypes.mc4](types/MCArrayTypes.mc4) (stable)
+
+Arrays are orthogonal to the generic extensions and
+thus be combined with any of the above variants.
+Language component MCArrayTypes provides
+possibilities to add arrays, such as `Person[]` or `int[][]`.
+
+
+## Symbols: List of Grammars in package `de.monticore.symbols`
+
+These two grammars do not provide syntax themselves, but 
+characterize important forms of symbols, that will be used
+in the type and the expression grammars to define shared 
+kinds of symbols. 
+
+### [BasicSymbols.mc4](symbols/BasicSymbols.mc4) (stable)
 * This grammar defines symbols for *Types* (of all kinds), *Functions*, 
   *Variables* and *TypeVariables*.
 * The defined symbols are of general form and can be used in functional, OO
@@ -108,8 +127,7 @@ types, then use a simpler version from above. Type checking ist tricky.
 * Remark: This grammar is not intended to define concrete or abstract syntax, but the
   infrastructure for symbols. 
 
-
-### [OOSymbols.mc4](symbols/OOSymbols.mc4) (Beta: In Stabilization)
+### [OOSymbols.mc4](symbols/OOSymbols.mc4) (stable)
 * This grammar defines symbols for *objectoriented Types*, *Methods*, and
   *Fields* by mainly extending the symbols defined in `BasicTypeSymbols`.
 * The newly defined symbols extend the general ones by typical 
@@ -130,6 +148,7 @@ infrastructure.
 This modularity of expressions and associated types greatly eases 
 the reuse of type structures in languages similar to Java.
 Some snipets for operators definrd in expressions:
+
   ```
   CommonExp:     /  %  +  -  <=  >=  ==  >  <  !=  ~.  !.  .?.:.
   PLogicExp:     &&  ||  ~. 
@@ -179,7 +198,7 @@ modelling language.
 
 
 ### [SetExpressions.mc4](expressions/SetExpressions.mc4) (Beta: In Stabilization)
-* This grammar defines set expressions like {..|..}, set union, intersection etc.
+* This grammar defines set expressions like set union, intersection etc.
 these operations are typical for a logic with set operations, like 
 UML's OCL.
 
@@ -195,6 +214,7 @@ UML's OCL.
 
 Literals are the basic elements of expressions, such as numbers, strings, 
 truth values. Some snipets:
+
   ```
   MCCommonLit       3  -3  2.17  -4  true  false  'c'  '\03AE' 
                     3L  2.17d  2.17f  0xAF  "string" "str\b\n\\"  
@@ -216,7 +236,7 @@ various forms of literals.
   of appropriate type and a retrieve function `getSource()` for a text representation
   of the literal.
 
-### [MCJavaLiterals.mc4](literals/MCJavaLiterals.mc4) (Beta: In Stabilization)
+### [MCJavaLiterals.mc4](literals/MCJavaLiterals.mc4) (stable)
 * This grammar defines Java compliant literals and builds on MCCommonLiterals.
 * The scope of this grammar is to
   ease the reuse of literals structures in Java-like sublanguages.
@@ -237,6 +257,7 @@ The following hierarchy of statement definitions should allow
 the developers to choose needed forms of statements and extend it 
 by their own additional needs. The provided list of statements
 is inspired by Java (actually subset of Java). Some example statements:
+
   ```
   int i;   int j = 2;                     Person p[] = { foo(3+7), p2, ...}
   if (.) then . else .                    for ( i = .; .; .) {.}
@@ -253,7 +274,7 @@ is inspired by Java (actually subset of Java). Some example statements:
 * This grammar defines the core interface for statements.
 * A hierarchy of conservative extensions to this grammar is provided below.
 
-### [MCCommonStatements.mc4](statements/MCCommonStatements.mc4) (Beta: In Stabilization)
+### [MCCommonStatements.mc4](statements/MCCommonStatements.mc4) (stable)
 * This grammar defines typical statements, such as method calls
   (which are actually expressions),
   assignment of variables, if, for, while, switch statements, and blocks.
@@ -264,14 +285,14 @@ is inspired by Java (actually subset of Java). Some example statements:
 * This grammar defines exactly the assert statement as known from Java.
 * It can be used independently of other Java statements.
 
-### [MCExceptionStatements.mc4](statements/MCExceptionStatements.mc4) (Beta: In Stabilization)
+### [MCExceptionStatements.mc4](statements/MCExceptionStatements.mc4) (stable)
 * This grammar defines the exception statements.
 * This includes Java try with catch and finally, as well as throw.
 
 ### [MCSynchronizedStatements.mc4](statements/MCSynchronizedStatements.mc4) (stable)
 * This grammar defines the Java-like synchronized statement.
 
-### [MCLowLevelStatements.mc4](statements/MCLowLevelStatements.mc4) (Beta: In Stabilization)
+### [MCLowLevelStatements.mc4](statements/MCLowLevelStatements.mc4) (stable)
 * This grammar defines three low-level statements that Java provides.
 * It contains the break and continue statements and the possibility to label a statement.
 
@@ -318,15 +339,24 @@ several smaller grammars are also available:
  * This includes Cardinality, Completeness, UMLModifier, and UMLStereotype.
 
 
-### [JavaLight.mc4](JavaLight.mc4) (Beta: In Stabilization)
+### [JavaLight.mc4](JavaLight.mc4) (stable)
 * JavaLight is a subset of Java that MontiCore itself
   uses as intermediate language for the code generation process.
 * JavaLight doesn't provide all forms of classes (e.g. inner classes)
   and reduces the type system to normal generic types.  
-  However, that is suffiecient for representation of all generated
+  However, that is sufficient for representation of all generated
   pieces of code that MontiCore wants to make.
+* Included are: the full Java expressions (without anonymous classes),
+  the relevant Java statements, declaration of methods, constructors,
+  constants, interface methods, and annotations.
+* JavaLight composes from CommonExpressions,
+                                    AssignmentExpressions,
+                                    JavaClassExpressions,
+                                    MCCommonStatements,
+                                    MCBasicTypes, and
+                                    OOSymbols.
 * JavaLight can be used for other generator tools as well,
-  especially as core template are reusable and new templates
+  especially as its core templates are reusable and new templates
   for specific method bodies can be added using MontiCore's
   Hook-Mechanisms.
 
@@ -343,7 +373,12 @@ These can also be used if someone is interested:
 ## Further Information
 
 * [Project root: MontiCore @github](https://github.com/MontiCore/monticore)
-* [**List of languages**](../../../../../../docs/Languages.md).
 * [MontiCore documentation](http://www.monticore.de/)
+
+* [**List of languages**](https://git.rwth-aachen.de/monticore/monticore/-/blob/dev/docs/Languages.md)
+* [**MontiCore Core Grammar Library**](https://git.rwth-aachen.de/monticore/monticore/blob/dev/monticore-grammar/src/main/grammars/de/monticore/Grammars.md)
+* [Best Practices](BestPractices.md)
+* [Publications about MBSE and MontiCore](https://www.se-rwth.de/publications/)
+
 
 

@@ -46,7 +46,7 @@ public class DataDecorator extends AbstractTransformer<ASTCDClass> {
     if (originalClass.isPresentSuperclass()) {
       changedClass.setSuperclass(originalClass.getSuperclass());
     }
-    changedClass.addAllInterfaces(originalClass.getInterfaceList());
+    changedClass.addAllInterface(originalClass.getInterfaceList());
     changedClass.addAllCDMethods(originalClass.getCDMethodList());
 
     //remove inherited attributes, because these are already defined in superclass

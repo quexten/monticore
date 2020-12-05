@@ -1,6 +1,10 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.monticore.expressions;
 
+
+
+import de.monticore.expressions.*;
+
 /**
  * This grammar defines a expressions typical to UMLs OCL
  *
@@ -18,15 +22,16 @@ package de.monticore.expressions;
  * * expressions/ExpressionsBasis.mc4
  * * --  expressions/CommonExpressions.mc4
  * * --  --  expressions/JavaClassExpressions.mc4
- * * --  --  expressions/SetExpressions.mc4
  * * --  expressions/AssignmentExpressions.mc4
  * * --  expressions/BitExpressions.mc4
  * * --  expressions/OCLExpressions.mc4
+ * * --  expressions/SetExpressions.mc4
  *
 */
 
+@Deprecated
 component grammar OCLExpressions
-          extends de.monticore.expressions.ExpressionsBasis {
+          extends ExpressionsBasis {
 
     external EDeclaration;
     external ExtType;

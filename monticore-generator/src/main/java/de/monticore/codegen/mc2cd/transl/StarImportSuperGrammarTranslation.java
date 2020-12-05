@@ -29,7 +29,7 @@ public class StarImportSuperGrammarTranslation implements
       MCGrammarSymbol symbol = grammar.getSymbol();
       for (MCGrammarSymbol superSymbol : symbol.getSuperGrammarSymbols()) {
         List<String> names = Arrays.asList(superSymbol.getFullName().split("\\."));
-        ASTMCImportStatement importStatement = MCBasicTypesMill.mCImportStatementBuilder().setMCQualifiedName(MCBasicTypesMill.mCQualifiedNameBuilder().setPartList(names).build())
+        ASTMCImportStatement importStatement = MCBasicTypesMill.mCImportStatementBuilder().setMCQualifiedName(MCBasicTypesMill.mCQualifiedNameBuilder().setPartsList(names).build())
             .setStar(true).build();
         ;
         rootLink.target().getMCImportStatementList().add(importStatement);

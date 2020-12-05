@@ -88,7 +88,7 @@ public class ParentAwareVisitorDecoratorTest extends DecoratorTestCase {
 
   @Test
   public void testInterfaceCount() {
-    assertEquals(1, visitorClass.sizeInterfaces());
+    assertEquals(1, visitorClass.sizeInterface());
   }
 
   @Test

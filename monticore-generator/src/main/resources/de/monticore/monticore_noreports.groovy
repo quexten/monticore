@@ -57,10 +57,10 @@ while (grammarIterator.hasNext()) {
       runGrammarCoCos(astGrammar, mcScope)
 
       // M5: transform grammar AST into Class Diagram AST
-      astClassDiagramWithST = deriveCD(astGrammar, glex, cdScope)
+      astClassDiagramWithST = deriveASTCD(astGrammar, glex, cdScope)
 
       // M6: generate parser and wrapper
-      generateParser(glex, astGrammar, mcScope, handcodedPath, out)
+      generateParser(glex, astClassDiagramWithST, astGrammar, mcScope, handcodedPath, out)
 
       deriveSymbolCD(astGrammar, symbolCdScope)
 
@@ -87,10 +87,8 @@ for (astGrammar in getParsedGrammars()) {
 
   astClassDiagram = addListSuffixToAttributeName(astClassDiagram)
 
-  // report the base diagrams
-  reportCD(astClassDiagram, "", report)
-  reportCD(symbolClassDiagramm, "_Symbol", report)
-  reportCD(scopeClassDiagramm, "_Scope", report)
+  // report the basic AST diagram
+  reportCD(astClassDiagram, report)
 
   decoratedSymbolTableCd = decorateForSymbolTablePackage(glex, cdScope, astClassDiagram, symbolClassDiagramm, scopeClassDiagramm, handcodedPath)
   generateFromCD(glex, astClassDiagram, decoratedSymbolTableCd, out, handcodedPath)
@@ -98,6 +96,10 @@ for (astGrammar in getParsedGrammars()) {
   // M9 Generate ast classes, visitor and context condition
   decoratedVisitorCD = decorateForVisitorPackage(glex, cdScope, astClassDiagram, handcodedPath)
   generateFromCD(glex, astClassDiagram, decoratedVisitorCD, out, handcodedPath)
+
+  // decorate and generate Traverser CD for the '_visitor' package
+  decoratedTraverserCD = decorateTraverserForVisitorPackage(glex, cdScope, astClassDiagram, handcodedPath)
+  generateFromCD(glex, astClassDiagram, decoratedTraverserCD, out, handcodedPath)
 
   decoratedCoCoCD = decorateForCoCoPackage(glex, cdScope, astClassDiagram, handcodedPath)
   generateFromCD(glex, astClassDiagram, decoratedCoCoCD, out, handcodedPath)
@@ -113,6 +115,9 @@ for (astGrammar in getParsedGrammars()) {
   // decorate and generate CD for the mills
   decoratedMillCD = decorateMill(glex, cdScope, astClassDiagram, decoratedASTClassDiagramm,decoratedVisitorCD, decoratedSymbolTableCd, handcodedPath)
   generateFromCD(glex, astClassDiagram, decoratedMillCD, out, handcodedPath)
+
+  // report the full AST incl. Symbols diagrams
+  reportCD(astClassDiagram, decoratedASTClassDiagramm, decoratedSymbolTableCd, scopeClassDiagramm, report)
 
   Log.info("Grammar " + astGrammar.getName() + " processed successfully!", LOG_ID)
 

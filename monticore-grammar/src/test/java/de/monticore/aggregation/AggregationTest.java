@@ -15,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Optional;
 
 import static junit.framework.TestCase.assertTrue;
@@ -56,18 +57,19 @@ public class AggregationTest {
   );
   
   // create symbol table for "blah"
-  BlahSymbolTableCreator blahSymbolTableCreator = BlahMill.blahSymbolTableCreatorBuilder().addToScopeStack(globalScope.getIBlahGS()).build();
-  BlahScope blahSymbolTable = blahSymbolTableCreator.createFromAST(blahModel.get());
+  BlahSymbolTableCreator blahSymbolTableCreator = new BlahSymbolTableCreator(globalScope.getIBlahGS());
+  IBlahArtifactScope blahSymbolTable = blahSymbolTableCreator.createFromAST(blahModel.get());
+  blahSymbolTable.setName("blahmodel");
   
   // check dummy symbol is present in local scope
-  Optional<DummySymbol> blubSymbol1 = blahSymbolTable.resolveDummy("blubScope1.blubSymbol1");
+  Optional<DummySymbol> blubSymbol1 = blahSymbolTable.resolveDummy("blahmodel.blubScope1.blubSymbol1");
   
   assertTrue(blubSymbol1.isPresent());
 //
 //
 
   // check dummy symbol is present in global scope
-  Optional<BarSymbol> barSymbol = globalScope.resolveBar("blubScope1.blubSymbol1");
+  Optional<BarSymbol> barSymbol = globalScope.resolveBar("blahmodel.blubScope1.blubSymbol1");
   
   assertTrue(barSymbol.isPresent());
 
@@ -86,8 +88,8 @@ public class AggregationTest {
   assertTrue(fooModel.isPresent());
  
   // create symbol table for "foo"
-  FooSymbolTableCreatorDelegator fooSymbolTableCreator = FooMill.fooSymbolTableCreatorDelegatorBuilder().setGlobalScope(globalScope).build();
-  FooScope fooScope = fooSymbolTableCreator.createFromAST(fooModel.get());
+  FooSymbolTableCreatorDelegator fooSymbolTableCreator = FooMill.fooSymbolTableCreatorDelegator();
+  IFooArtifactScope fooScope = fooSymbolTableCreator.createFromAST(fooModel.get());
   
   // check symbol is resolvable
   Optional<BarSymbol> k = fooScope.resolveBar("name");
