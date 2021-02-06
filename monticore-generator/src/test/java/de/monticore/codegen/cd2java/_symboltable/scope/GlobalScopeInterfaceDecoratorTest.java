@@ -194,6 +194,7 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
 >>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
   }
 
+<<<<<<< HEAD
 
   @Test
 <<<<<<< HEAD
@@ -225,6 +226,8 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
     assertEquals("name", method.getCDParameter(0).getName());
   }
 
+=======
+>>>>>>> 4f056f276381b600afafd2709bfabbb956dec221
   @Test
   public void testGetEnclosingScopeMethod() {
     ASTCDMethod method = getMethodBy("getEnclosingScope", scopeInterface);
@@ -476,7 +479,7 @@ public class GlobalScopeInterfaceDecoratorTest extends DecoratorTestCase {
 =======
   @Test
   public void testMethodCount() {
-    assertEquals(97, scopeInterface.getCDMethodList().size());
+    assertEquals(89, scopeInterface.getCDMethodList().size());
   }
 
 >>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
