@@ -19,13 +19,8 @@ import de.monticore.expressions.*;
  * composed if desired.
  *
  * The grammar has several extension points for types to be filled when used.
-<<<<<<< HEAD
- * 
- * This grammar is part of a hierarchy of expressions, namely 
-=======
  *
  * This grammar is part of a hierarchy of expressions, namely
->>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e
  * * expressions/ExpressionsBasis.mc4
  * * --  expressions/CommonExpressions.mc4
  * * --  --  expressions/JavaClassExpressions.mc4

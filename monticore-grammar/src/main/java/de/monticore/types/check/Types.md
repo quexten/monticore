@@ -1,10 +1,7 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<<<<<<< HEAD:monticore-grammar/src/main/java/de/monticore/types/check/README.md
-=======
 <!-- Alpha-version: This is intended to become a MontiCore stable explanation. -->
 
->>>>>>> 4a140e4c5da5ecbc2be7c40ebe93937d04f19b8e:monticore-grammar/src/main/java/de/monticore/types/check/Types.md
 In MontiCore, the TypeCheck is used to calculate the type of a set of expressions.
 This happens by traversing the AST of an expression, calculating the types of its
 sub-expressions and combining them to the type of the main expression.
