@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+package de.monticore;
+
+grammar TestJavaLight extends de.monticore.JavaLight, de.monticore.literals.MCCommonLiterals, de.monticore.types.MCCollectionTypes, de.monticore.types.MCArrayTypes  {
+  start JavaMethod;
+
+  ExtTypeParameters = MCTypeArgument;
+
+  ExtType = MCType;
+
+  ExtReturnType = MCReturnType;
+
+  ExtTypeArgument = MCTypeArgument;
+}
